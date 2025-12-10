@@ -1,0 +1,19 @@
+{
+  "name": "fractals",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.15.1",
+  "devDependencies": {
+    "@nx/vite": "^22.2.0",
+    "@nx/web": "^22.2.0",
+    "@nx/workspace": "^22.2.0",
+    "nx": "^22.2.0"
+  }
+}

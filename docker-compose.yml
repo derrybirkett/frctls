@@ -1,0 +1,45 @@
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: monospace-dev
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    ports:
+      - "4321:4321"
+    command: ["sleep", "infinity"]
+
+  db:
+    image: postgres:16
+    container_name: nexus-db
+    environment:
+      POSTGRES_DB: nexus
+      POSTGRES_USER: nexus
+      POSTGRES_PASSWORD: nexus
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  n8n:
+    image: n8nio/n8n
+    container_name: nexus-n8n
+    depends_on:
+      - db
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: db
+      DB_POSTGRESDB_DATABASE: nexus
+      DB_POSTGRESDB_USER: nexus
+      DB_POSTGRESDB_PASSWORD: nexus
+      N8N_BASIC_AUTH_ACTIVE: "false"
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  pgdata:
+  n8n_data:
