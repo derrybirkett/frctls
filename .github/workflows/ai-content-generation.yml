@@ -86,6 +86,18 @@ jobs:
             **Note**: Please review and edit before merging to ensure quality and accuracy.
           branch: ai-content/${{ steps.generate.outputs.slug }}
           delete-branch: true
+          add-paths: |
+            apps/blog/src/content/drafts/
+
+      - name: Fallback - Direct commit if PR fails
+        if: steps.generate.outputs.content_created == 'true' && failure()
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action AI"
+          git add apps/blog/src/content/drafts/
+          git commit -m "feat: add AI-generated blog post - ${{ steps.generate.outputs.post_title }}" || echo "No changes to commit"
+          git push || echo "Nothing to push"
+          echo "⚠️ PR creation failed, content committed directly"
 
       - name: Comment on workflow run
         if: steps.generate.outputs.content_created == 'true'
