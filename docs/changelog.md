@@ -3,7 +3,8 @@
 All notable changes to fractalsofchange are documented here.
 
 ## Unreleased
-- <planned or in-progress changes>
+- Phase 2: Core web application development
+- Database schema for organizational pattern tracking
 
 ## 2025-12-09 — Branch Protection & Strategic Roadmap
 ### Added
@@ -113,3 +114,25 @@ All notable changes to fractalsofchange are documented here.
 
 ### Security
 - <notable security changes>
+
+## 2025-12-11 — Phase 1 MVP: Blog Content Strategy
+### Added
+- **Fractals of Change blog branding** - Customized Astro blog with organizational transformation focus
+- **Content strategy framework** - Established 4 content pillars: theory, leadership, case studies, implementation
+- **Foundational blog posts** - Published "Introducing Fractals of Change" and "Hidden Cost of Cultural Tokens"
+- **Enhanced content schema** - Added categories, tags, author, and reading time to blog post structure
+- **Kiro steering documents** - Created AI assistant guidance for product, tech stack, and project structure
+
+### Changed
+- Updated blog homepage with Fractals of Change messaging and value proposition
+- Customized About page to reflect organizational transformation mission
+- Removed template blog content to focus on fractal change methodology
+
+### Content
+- **"Introducing Fractals of Change"** - Foundational post explaining fractal approach to organizational transformation
+- **"Hidden Cost of Cultural Tokens"** - Analysis of invisible productivity drains in enterprise organizations
+- **Content creation template** - Standardized format for future blog posts with SEO guidelines
+
+### Infrastructure
+- **Blog deployment verified** - Successfully running at http://localhost:4321/
+- **Development workflow established** - Docker + Astro + pnpm integration working seamlessly

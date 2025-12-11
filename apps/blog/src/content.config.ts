@@ -13,6 +13,12 @@ const blog = defineCollection({
 			pubDate: z.coerce.date(),
 			updatedDate: z.coerce.date().optional(),
 			heroImage: image().optional(),
+			// Content categorization
+			category: z.enum(['theory', 'leadership', 'case-studies', 'implementation']).optional(),
+			tags: z.array(z.string()).optional(),
+			// SEO and social
+			author: z.string().default('Fractals of Change'),
+			readingTime: z.string().optional(),
 		}),
 });
 

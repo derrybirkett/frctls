@@ -15,16 +15,22 @@ Refactor organisational structure through managed changes to affect larger chang
 Web application
 
 ## Why It Matters (Vision & Outcomes)
-- **Vision**: <Describe where you want to be in 12-24 months>
+- **Vision**: Become the leading platform for fractal organizational transformation, helping 1000+ enterprise directors achieve sustainable cultural change by 2027
 - **Outcomes**: 
-  1. <First measurable outcome>
-  2. <Second measurable outcome>
-  3. <Third measurable outcome>
-- **Success metrics**: <Quantified targets and leading indicators>
+  1. 70% reduction in failed change initiatives for client organizations
+  2. $10M+ in productivity gains measured across client base
+  3. 50+ published case studies demonstrating fractal change effectiveness
+- **Success metrics**: 
+  - Blog readership: 10K monthly visitors by Q2 2026
+  - Platform adoption: 100 enterprise clients by end of 2026
+  - Transformation success rate: >80% for fractal change initiatives
 
 ## Non-Goals
-- <Explicitly list what we are NOT doing>
+- Traditional change management consulting services
+- Generic productivity tools without fractal methodology
+- Small business or individual productivity solutions
+- Academic research without practical application
 
 ## Current Status
-- **Lifecycle stage**: Discovery
-- **Next milestone**: <Date and objective>
+- **Lifecycle stage**: Phase 1 MVP - Content Strategy & Thought Leadership
+- **Next milestone**: January 2026 - Launch beta web application with pattern recognition tools
