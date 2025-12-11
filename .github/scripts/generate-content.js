@@ -44,52 +44,32 @@ const PAIN_POINTS = [
 ];
 
 async function generateBlogPost(topic, targetDate) {
-  const prompt = `
-You are a thought leader writing for enterprise directors about organizational transformation using fractal change methodology.
+  const prompt = `Write a professional blog post about "${topic}" for enterprise directors. 
 
-Topic: ${topic}
+The post should be 800-1200 words and include:
+- A compelling title
+- Practical insights for large organizations
+- Actionable recommendations
+- Professional tone
 
-Write a comprehensive blog post (1200-1500 words) that:
-
-1. **Addresses enterprise director concerns**: Focus on practical, measurable solutions for large organizations
-2. **Uses fractal change principles**: Small changes that scale naturally across organizations
-3. **Provides actionable insights**: Concrete steps directors can implement immediately
-4. **Includes real-world applications**: How this applies to common enterprise challenges
-5. **Maintains professional tone**: Authoritative but accessible, avoiding jargon
-
-Structure:
-- Compelling headline that speaks to director-level concerns
-- Hook that identifies a specific pain point
-- 3-4 main sections with practical insights
-- Concrete examples or case study elements
-- Clear call-to-action for next steps
-
-Focus on:
-- ROI and measurable outcomes
-- Low-risk implementation strategies
-- Scalability across departments
-- Cultural transformation that sticks
-- Productivity improvements
-
-Write in a confident, solution-oriented voice that positions small changes as the key to large-scale transformation.
-
-Return the response in this exact JSON format:
+Return ONLY a valid JSON object with this structure:
 {
   "title": "Blog post title",
-  "description": "SEO meta description (150-160 characters)",
-  "content": "Full blog post content in markdown format",
+  "description": "SEO description under 160 characters",
+  "content": "Full blog post content in markdown",
   "tags": ["tag1", "tag2", "tag3"],
-  "summary": "2-sentence summary of the main value proposition"
-}
-`;
+  "summary": "Brief 2-sentence summary"
+}`;
 
   try {
+    console.log('🤖 Calling OpenAI API...');
+    
     const completion = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-3.5-turbo",
       messages: [
         {
           role: "system",
-          content: "You are an expert content creator specializing in organizational transformation and change management for enterprise leaders. You understand fractal change methodology and write compelling, actionable content for C-level executives."
+          content: "You are a professional content writer. Always return valid JSON only."
         },
         {
           role: "user",
@@ -97,26 +77,25 @@ Return the response in this exact JSON format:
         }
       ],
       temperature: 0.7,
-      max_tokens: 4000
+      max_tokens: 3000
     });
 
-    const response = completion.choices[0].message.content;
+    const response = completion.choices[0].message.content.trim();
+    console.log('📝 Received response from OpenAI');
     
     // Parse JSON response
     let parsedResponse;
     try {
-      parsedResponse = JSON.parse(response);
+      // Clean the response to ensure it's valid JSON
+      const cleanResponse = response.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      parsedResponse = JSON.parse(cleanResponse);
     } catch (parseError) {
       console.error('Failed to parse AI response as JSON:', parseError);
-      // Fallback: try to extract content between JSON markers
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        parsedResponse = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error('Could not extract valid JSON from AI response');
-      }
+      console.log('Raw response:', response);
+      throw new Error('Could not parse AI response as valid JSON');
     }
 
+    console.log('✅ Successfully parsed AI response');
     return {
       ...parsedResponse,
       targetDate,
@@ -155,6 +134,11 @@ async function createBlogPostFile(postData) {
   const slug = createSlug(title);
   const pubDate = getNextPublicationDate(targetDate);
   
+  console.log('📝 Creating blog post file...');
+  console.log('- Title:', title);
+  console.log('- Slug:', slug);
+  console.log('- Pub Date:', format(pubDate, 'yyyy-MM-dd'));
+  
   const frontmatter = `---
 title: '${title.replace(/'/g, "''")}'
 description: '${description.replace(/'/g, "''")}'
@@ -168,24 +152,38 @@ ${content}`;
   const filename = `${slug}.md`;
   const filepath = path.join('../../apps/blog/src/content/drafts', filename);
   
-  // Ensure drafts directory exists
-  await fs.mkdir(path.dirname(filepath), { recursive: true });
+  console.log('📂 Writing to:', filepath);
   
-  // Write the file
-  await fs.writeFile(filepath, frontmatter, 'utf8');
-  
-  return {
-    filename,
-    filepath,
-    slug,
-    pubDate: format(pubDate, 'yyyy-MM-dd'),
-    wordCount: content.split(/\s+/).length
-  };
+  try {
+    // Ensure drafts directory exists
+    await fs.mkdir(path.dirname(filepath), { recursive: true });
+    
+    // Write the file
+    await fs.writeFile(filepath, frontmatter, 'utf8');
+    
+    console.log('✅ File written successfully');
+    
+    return {
+      filename,
+      filepath,
+      slug,
+      pubDate: format(pubDate, 'yyyy-MM-dd'),
+      wordCount: content.split(/\s+/).length
+    };
+  } catch (error) {
+    console.error('❌ Error writing file:', error);
+    throw error;
+  }
 }
 
 async function main() {
   try {
     console.log('🤖 Starting AI content generation...');
+    
+    // Check environment
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY environment variable is required');
+    }
     
     // Get topic (from input or random selection)
     const topicOverride = process.env.TOPIC_OVERRIDE;
@@ -194,9 +192,11 @@ async function main() {
     console.log(`📝 Generating content for topic: ${topic}`);
     
     // Generate the blog post
+    console.log('🎯 Step 1: Generating blog post content...');
     const postData = await generateBlogPost(topic, process.env.TARGET_DATE);
     
     // Create the blog post file
+    console.log('💾 Step 2: Creating blog post file...');
     const fileInfo = await createBlogPostFile(postData);
     
     console.log(`✅ Content generated successfully!`);
@@ -205,24 +205,28 @@ async function main() {
     console.log(`📊 Word Count: ${fileInfo.wordCount}`);
     
     // Set outputs for GitHub Actions
-    const fs = require('fs');
+    console.log('🔧 Step 3: Setting GitHub Actions outputs...');
     const outputFile = process.env.GITHUB_OUTPUT;
     if (outputFile) {
-      fs.appendFileSync(outputFile, `content_created=true\n`);
-      fs.appendFileSync(outputFile, `post_title=${postData.title}\n`);
-      fs.appendFileSync(outputFile, `topic=${topic}\n`);
-      fs.appendFileSync(outputFile, `target_date=${fileInfo.pubDate}\n`);
-      fs.appendFileSync(outputFile, `slug=${fileInfo.slug}\n`);
-      fs.appendFileSync(outputFile, `word_count=${fileInfo.wordCount}\n`);
-      fs.appendFileSync(outputFile, `summary=${postData.summary}\n`);
+      await fs.appendFile(outputFile, `content_created=true\n`);
+      await fs.appendFile(outputFile, `post_title=${postData.title}\n`);
+      await fs.appendFile(outputFile, `topic=${topic}\n`);
+      await fs.appendFile(outputFile, `target_date=${fileInfo.pubDate}\n`);
+      await fs.appendFile(outputFile, `slug=${fileInfo.slug}\n`);
+      await fs.appendFile(outputFile, `word_count=${fileInfo.wordCount}\n`);
+      await fs.appendFile(outputFile, `summary=${postData.summary}\n`);
+      console.log('✅ GitHub Actions outputs set');
     }
     
   } catch (error) {
     console.error('❌ Content generation failed:', error);
-    const fs = require('fs');
+    console.error('Error details:', error.message);
+    console.error('Stack trace:', error.stack);
+    
     const outputFile = process.env.GITHUB_OUTPUT;
     if (outputFile) {
-      fs.appendFileSync(outputFile, `content_created=false\n`);
+      await fs.appendFile(outputFile, `content_created=false\n`);
+      await fs.appendFile(outputFile, `error_message=${error.message}\n`);
     }
     process.exit(1);
   }
