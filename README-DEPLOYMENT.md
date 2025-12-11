@@ -13,7 +13,7 @@ This repository is configured for automatic deployment to GitHub Pages with cont
 
 2. **Configure Repository URL**
    - Update `site` in `apps/blog/astro.config.mjs` if using custom domain
-   - Current config: `https://fractalsofchange.github.io/fractals/`
+   - Current config: `https://fractalsofchange.github.io/frctls/`
 
 3. **Push to Main Branch**
    - Deployment triggers automatically on changes to `apps/blog/**`
@@ -133,6 +133,6 @@ cd apps/blog && pnpm dev
 
 ---
 
-**Live Site**: https://fractalsofchange.github.io/fractals/  
+**Live Site**: https://fractalsofchange.github.io/frctls/  
 **Content Schedule**: Tuesday & Friday publications  
 **Contact**: Enterprise directors interested in fractal organizational transformation

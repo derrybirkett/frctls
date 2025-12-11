@@ -46,7 +46,7 @@ The Fractals of Change blog is automatically deployed to GitHub Pages using GitH
 
 ### URLs
 
-- **Production**: https://fractalsofchange.github.io/fractals/
+- **Production**: https://fractalsofchange.github.io/frctls/
 - **Staging**: Preview deployments on pull requests
 
 ### Content Automation
