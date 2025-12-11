@@ -3,8 +3,8 @@
 All notable changes to fractalsofchange are documented here.
 
 ## Unreleased
-- Phase 2: Core web application development
-- Database schema for organizational pattern tracking
+- GitHub Pages deployment and content automation
+- Scheduled content publishing workflow
 
 ## 2025-12-09 — Branch Protection & Strategic Roadmap
 ### Added

@@ -74,3 +74,9 @@ nx run infra:logs
 - Use TypeScript for type safety
 - Follow Nx project structure conventions
 - Separate apps from shared tools/infrastructure
+
+## Deployment & Automation
+- **GitHub Pages**: Automatic deployment on main branch updates
+- **Content Automation**: Scheduled publishing every Tuesday & Friday
+- **Build Process**: Astro static site generation with image optimization
+- **Content Workflow**: Draft → Schedule → Automated Publishing → Review → Deploy

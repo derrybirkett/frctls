@@ -20,6 +20,7 @@ Log new agent activity for each commit: who did what and why.
 | 2025-12-11 | CTO | local | Created Kiro steering documents for AI assistance | Established product overview, tech stack documentation, and project structure guidelines to guide AI assistants working on the codebase | .kiro/steering/product.md, tech.md, structure.md |
 | 2025-12-11 | CTO | local | Implemented Phase 1 MVP blog content strategy | Customized Astro blog with Fractals of Change branding, created foundational content pillars, published first two thought leadership posts, tested and verified blog deployment | apps/blog/src/consts.ts, pages/index.astro, content/blog/, CONTENT_TEMPLATE.md |
 | 2025-12-11 | CTO | local | Phase 1 MVP wrap-up and deployment verification | Successfully launched blog at localhost:4321, verified all content renders correctly, established content creation workflow for future posts | Blog running on http://localhost:4321/ |
+| 2025-12-11 | CTO | feat/github-pages-deployment | Implemented GitHub Pages deployment and content automation | Configured Astro for GitHub Pages, created automated deployment workflow, set up content scheduling system with Tuesday/Friday publication schedule | .github/workflows/, docs/deployment.md, apps/blog/src/content/drafts/ |
 | YYYY-MM-DD | <agent> | <hash or #PR> | <summary> | <decision/assumption> | <issue/docs> |
 
 Guidance:

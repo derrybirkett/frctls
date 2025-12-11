@@ -1,0 +1,14 @@
+# Drafts Directory
+
+This directory contains blog posts that are scheduled for future publication.
+
+## Usage
+
+1. Create new blog posts in this directory with future `pubDate` values
+2. The content automation workflow will automatically move posts to the `blog/` directory when their publish date arrives
+3. Use the same frontmatter format as published posts
+
+## Scheduling
+
+Posts are checked for publication every Tuesday and Friday at 9 AM UTC.
+You can also manually trigger the workflow from the GitHub Actions tab.
