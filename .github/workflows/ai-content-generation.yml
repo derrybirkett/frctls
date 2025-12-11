@@ -46,18 +46,7 @@ jobs:
       - name: Generate content
         id: generate
         run: |
-          echo "🔍 Debug information:"
-          echo "Working directory: $(pwd)"
-          echo "Files in .github/scripts:"
-          ls -la .github/scripts/
-          echo "Node version: $(node --version)"
-          echo "NPM version: $(npm --version)"
-          echo "Environment variables:"
-          echo "- OPENAI_API_KEY: ${OPENAI_API_KEY:0:10}..."
-          echo "- TOPIC_OVERRIDE: $TOPIC_OVERRIDE"
-          echo "- TARGET_DATE: $TARGET_DATE"
-          echo ""
-          echo "🚀 Starting content generation..."
+          echo "🚀 Starting AI content generation..."
           cd .github/scripts
           node generate-content.js
         env:
@@ -68,25 +57,13 @@ jobs:
       - name: Commit generated content
         if: steps.generate.outputs.content_created == 'true'
         run: |
-          echo "🔧 Configuring git..."
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action AI"
-          
-          echo "📂 Checking for generated files..."
-          ls -la apps/blog/src/content/drafts/
-          
-          echo "➕ Adding files to git..."
           git add apps/blog/src/content/drafts/
-          
-          echo "🔍 Checking git status..."
-          git status
-          
           if git diff --staged --quiet; then
-            echo "❌ No changes to commit"
+            echo "No changes to commit"
           else
-            echo "💾 Committing changes..."
             git commit -m "feat: add AI-generated blog post - ${{ steps.generate.outputs.post_title }}"
-            echo "🚀 Pushing to repository..."
             git push
             echo "✅ Content committed and pushed successfully"
           fi
