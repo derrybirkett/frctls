@@ -166,7 +166,7 @@ tags: [${tags.map(tag => `'${tag}'`).join(', ')}]
 ${content}`;
 
   const filename = `${slug}.md`;
-  const filepath = path.join('apps/blog/src/content/drafts', filename);
+  const filepath = path.join('../../apps/blog/src/content/drafts', filename);
   
   // Ensure drafts directory exists
   await fs.mkdir(path.dirname(filepath), { recursive: true });
@@ -205,17 +205,25 @@ async function main() {
     console.log(`📊 Word Count: ${fileInfo.wordCount}`);
     
     // Set outputs for GitHub Actions
-    console.log(`::set-output name=content_created::true`);
-    console.log(`::set-output name=post_title::${postData.title}`);
-    console.log(`::set-output name=topic::${topic}`);
-    console.log(`::set-output name=target_date::${fileInfo.pubDate}`);
-    console.log(`::set-output name=slug::${fileInfo.slug}`);
-    console.log(`::set-output name=word_count::${fileInfo.wordCount}`);
-    console.log(`::set-output name=summary::${postData.summary}`);
+    const fs = require('fs');
+    const outputFile = process.env.GITHUB_OUTPUT;
+    if (outputFile) {
+      fs.appendFileSync(outputFile, `content_created=true\n`);
+      fs.appendFileSync(outputFile, `post_title=${postData.title}\n`);
+      fs.appendFileSync(outputFile, `topic=${topic}\n`);
+      fs.appendFileSync(outputFile, `target_date=${fileInfo.pubDate}\n`);
+      fs.appendFileSync(outputFile, `slug=${fileInfo.slug}\n`);
+      fs.appendFileSync(outputFile, `word_count=${fileInfo.wordCount}\n`);
+      fs.appendFileSync(outputFile, `summary=${postData.summary}\n`);
+    }
     
   } catch (error) {
     console.error('❌ Content generation failed:', error);
-    console.log(`::set-output name=content_created::false`);
+    const fs = require('fs');
+    const outputFile = process.env.GITHUB_OUTPUT;
+    if (outputFile) {
+      fs.appendFileSync(outputFile, `content_created=false\n`);
+    }
     process.exit(1);
   }
 }
