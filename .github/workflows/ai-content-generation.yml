@@ -52,57 +52,29 @@ jobs:
           TOPIC_OVERRIDE: ${{ github.event.inputs.topic_override }}
           TARGET_DATE: ${{ github.event.inputs.target_date }}
 
-      - name: Create Pull Request
+      - name: Commit generated content
         if: steps.generate.outputs.content_created == 'true'
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "feat: add AI-generated blog post - ${{ steps.generate.outputs.post_title }}"
-          title: "🤖 AI Generated Content: ${{ steps.generate.outputs.post_title }}"
-          body: |
-            ## AI-Generated Blog Post
-            
-            **Topic**: ${{ steps.generate.outputs.topic }}
-            **Target Date**: ${{ steps.generate.outputs.target_date }}
-            **Word Count**: ~${{ steps.generate.outputs.word_count }} words
-            
-            ### Content Summary
-            ${{ steps.generate.outputs.summary }}
-            
-            ### Review Checklist
-            - [ ] Content accuracy and factual verification
-            - [ ] Tone and voice alignment with brand
-            - [ ] SEO optimization (title, description, keywords)
-            - [ ] Image selection and alt text
-            - [ ] Call-to-action effectiveness
-            - [ ] Publication date and scheduling
-            
-            ### Generated Content
-            This post was automatically generated using AI based on:
-            - Current trends in organizational transformation
-            - Fractal change methodology principles
-            - Enterprise director pain points and interests
-            
-            **Note**: Please review and edit before merging to ensure quality and accuracy.
-          branch: ai-content/${{ steps.generate.outputs.slug }}
-          delete-branch: true
-          add-paths: |
-            apps/blog/src/content/drafts/
-
-      - name: Fallback - Direct commit if PR fails
-        if: steps.generate.outputs.content_created == 'true' && failure()
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action AI"
           git add apps/blog/src/content/drafts/
-          git commit -m "feat: add AI-generated blog post - ${{ steps.generate.outputs.post_title }}" || echo "No changes to commit"
-          git push || echo "Nothing to push"
-          echo "⚠️ PR creation failed, content committed directly"
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "feat: add AI-generated blog post - ${{ steps.generate.outputs.post_title }}"
+            git push
+            echo "✅ Content committed and pushed successfully"
+          fi
 
-      - name: Comment on workflow run
+      - name: Summary
         if: steps.generate.outputs.content_created == 'true'
         run: |
           echo "✅ Content generated successfully!"
           echo "📝 Post: ${{ steps.generate.outputs.post_title }}"
           echo "📅 Target Date: ${{ steps.generate.outputs.target_date }}"
-          echo "🔗 Review PR will be created automatically"
+          echo "📊 Word Count: ${{ steps.generate.outputs.word_count }}"
+          echo "🎯 Topic: ${{ steps.generate.outputs.topic }}"
+          echo "📂 File: ${{ steps.generate.outputs.slug }}.md"
+          echo ""
+          echo "The content has been added to drafts and will be published automatically"
+          echo "on the next scheduled publication date (Tuesday or Friday)."
