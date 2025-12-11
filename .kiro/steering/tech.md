@@ -78,5 +78,23 @@ nx run infra:logs
 ## Deployment & Automation
 - **GitHub Pages**: Automatic deployment on main branch updates
 - **Content Automation**: Scheduled publishing every Tuesday & Friday
+- **AI Content Generation**: Automated blog post creation using OpenAI GPT-4
 - **Build Process**: Astro static site generation with image optimization
-- **Content Workflow**: Draft → Schedule → Automated Publishing → Review → Deploy
+- **Content Workflow**: AI Generate → PR Review → Draft → Schedule → Automated Publishing → Deploy
+
+### AI Content Generation
+```bash
+# Manual content generation
+gh workflow run ai-content-generation.yml
+
+# Generate with custom topic
+gh workflow run ai-content-generation.yml -f topic_override="Your Topic"
+
+# Generate for specific date
+gh workflow run ai-content-generation.yml -f target_date="2024-01-15"
+```
+
+**Setup Requirements:**
+- OpenAI API key in GitHub Secrets (`OPENAI_API_KEY`)
+- Automatic generation every Sunday at 6:00 AM UTC
+- Creates PR for human review before publication

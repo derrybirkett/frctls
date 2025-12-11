@@ -1,0 +1,14 @@
+{
+  "name": "ai-content-generation",
+  "version": "1.0.0",
+  "description": "AI-powered content generation for blog automation",
+  "main": "generate-content.js",
+  "dependencies": {
+    "openai": "^4.20.1",
+    "@octokit/rest": "^20.0.2",
+    "date-fns": "^3.0.6"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
