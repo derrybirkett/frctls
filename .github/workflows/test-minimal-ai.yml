@@ -1,0 +1,43 @@
+name: Test Minimal AI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  minimal-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: |
+          cd .github/scripts
+          npm install
+      
+      - name: Run minimal test
+        id: test
+        run: |
+          cd .github/scripts
+          node minimal-test.js
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      
+      - name: Show results
+        run: |
+          echo "Test success: ${{ steps.test.outputs.test_success }}"
+          echo "Test file: ${{ steps.test.outputs.test_file }}"
+          if [ -f "apps/blog/src/content/drafts/test-ai-post.md" ]; then
+            echo "✅ File was created successfully!"
+            cat apps/blog/src/content/drafts/test-ai-post.md
+          else
+            echo "❌ File was not created"
+          fi
