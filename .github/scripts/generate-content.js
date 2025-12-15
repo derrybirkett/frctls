@@ -10,55 +10,193 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Content topics and themes for organizational transformation
-const CONTENT_THEMES = [
-  'Cultural Token Identification and Modification',
-  'Fractal Patterns in Enterprise Organizations',
-  'Small Changes, Big Impact: Case Studies',
-  'Measuring Organizational Transformation ROI',
-  'Leadership Strategies for Cultural Change',
-  'Breaking Down Silos Through Fractal Thinking',
-  'Digital Transformation Through Cultural Tokens',
-  'Change Management Without Disruption',
-  'Scaling Behavioral Changes Across Departments',
-  'Data-Driven Cultural Transformation',
-  'Remote Work and Cultural Token Evolution',
-  'Innovation Through Organizational Fractals',
-  'Employee Engagement and Cultural Patterns',
-  'Agile Transformation Using Fractal Principles',
-  'Cross-Functional Team Optimization'
-];
+// Enhanced content topics organized by category and business calendar
+const CONTENT_THEMES = {
+  // Strategic Transformation (Q1 Focus - Planning & Vision)
+  strategic: [
+    'Cultural Token Identification and Modification',
+    'Fractal Patterns in Enterprise Organizations', 
+    'Building Transformation Roadmaps That Actually Work',
+    'The Hidden Cost of Organizational Debt',
+    'Strategic Change vs. Tactical Fixes: When to Use Each',
+    'Creating Change-Ready Organizational DNA',
+    'The Mathematics of Organizational Transformation',
+    'Why Most Digital Transformations Fail (And How to Fix Them)',
+    'Designing Resilient Organizational Architectures',
+    'The Compound Effect of Small Organizational Changes'
+  ],
 
-// Enterprise director pain points and interests
-const PAIN_POINTS = [
-  'Resistance to change initiatives',
-  'Measuring transformation success',
-  'Budget constraints for change programs',
-  'Maintaining productivity during transitions',
-  'Scaling changes across large organizations',
-  'Getting buy-in from middle management',
-  'Avoiding change fatigue',
-  'Integrating new technologies smoothly',
-  'Improving cross-departmental collaboration',
-  'Reducing operational inefficiencies'
-];
+  // Leadership & Culture (Q2 Focus - Implementation & People)
+  leadership: [
+    'Leadership Strategies for Cultural Change',
+    'Breaking Down Silos Through Fractal Thinking',
+    'The Director\'s Guide to Change Communication',
+    'Building Change Champions at Every Level',
+    'Managing Up During Organizational Transformation',
+    'Creating Psychological Safety During Change',
+    'The Art of Incremental Leadership',
+    'Turning Resistance into Engagement',
+    'Leading Through Uncertainty: A Fractal Approach',
+    'Cultural Intelligence for Enterprise Directors'
+  ],
 
-async function generateBlogPost(topic, targetDate) {
-  const prompt = `Write a professional blog post about "${topic}" for enterprise directors. 
+  // Operational Excellence (Q3 Focus - Execution & Results)
+  operational: [
+    'Small Changes, Big Impact: Case Studies',
+    'Measuring Organizational Transformation ROI',
+    'Scaling Behavioral Changes Across Departments',
+    'Data-Driven Cultural Transformation',
+    'Change Management Without Disruption',
+    'Operational Efficiency Through Cultural Tokens',
+    'The Metrics That Matter in Transformation',
+    'Process Optimization via Organizational Fractals',
+    'Sustaining Change: Beyond the Initial Push',
+    'Quality Improvement Through Cultural Shifts'
+  ],
 
-The post should be 800-1200 words and include:
-- A compelling title
-- Practical insights for large organizations
-- Actionable recommendations
-- Professional tone
+  // Innovation & Future (Q4 Focus - Growth & Evolution)
+  innovation: [
+    'Innovation Through Organizational Fractals',
+    'Cross-Functional Team Optimization',
+    'Remote Work and Cultural Token Evolution',
+    'AI-Assisted Organizational Design',
+    'The Future of Enterprise Transformation',
+    'Adaptive Organizations: Built for Constant Change',
+    'Innovation Culture: Engineering Breakthrough Thinking',
+    'Digital-First Organizational Models',
+    'Preparing for the Next Disruption',
+    'Evolutionary vs. Revolutionary Change Strategies'
+  ],
+
+  // Tactical Guides (Year-round - Practical Implementation)
+  tactical: [
+    'Employee Engagement and Cultural Patterns',
+    'Agile Transformation Using Fractal Principles',
+    'Budget-Conscious Change Management',
+    'Quick Wins: 30-Day Transformation Sprints',
+    'Change Management Toolkit for Directors',
+    'Stakeholder Alignment in Complex Organizations',
+    'Communication Strategies for Large-Scale Change',
+    'Risk Management in Organizational Transformation',
+    'Vendor Management During Digital Transformation',
+    'Compliance and Change: Navigating Regulatory Requirements'
+  ],
+
+  // Industry-Specific (Seasonal - Based on industry events)
+  industry: [
+    'Healthcare Transformation: Unique Cultural Challenges',
+    'Financial Services: Regulatory Change Management',
+    'Manufacturing: Industry 4.0 Cultural Shifts',
+    'Technology Companies: Scaling Culture with Growth',
+    'Retail Transformation: Customer-Centric Change',
+    'Government Organizations: Public Sector Change Dynamics',
+    'Education: Academic Institution Transformation',
+    'Non-Profit Organizations: Mission-Driven Change',
+    'Startups to Enterprise: Scaling Organizational Culture',
+    'Global Organizations: Cross-Cultural Change Management'
+  ]
+};
+
+// Enterprise director pain points organized by category
+const PAIN_POINTS = {
+  // Financial & ROI Concerns
+  financial: [
+    'Proving ROI on transformation investments',
+    'Budget constraints for change programs',
+    'Cost overruns in digital transformation projects',
+    'Justifying cultural change initiatives to the board',
+    'Balancing short-term costs with long-term benefits',
+    'Resource allocation during organizational change'
+  ],
+
+  // People & Culture Challenges
+  cultural: [
+    'Resistance to change initiatives',
+    'Getting buy-in from middle management',
+    'Avoiding change fatigue across teams',
+    'Managing generational differences in change adoption',
+    'Maintaining employee morale during transitions',
+    'Creating urgency without creating panic'
+  ],
+
+  // Operational & Execution Issues
+  operational: [
+    'Maintaining productivity during transitions',
+    'Scaling changes across large organizations',
+    'Integrating new technologies smoothly',
+    'Coordinating change across multiple departments',
+    'Managing competing priorities and initiatives',
+    'Ensuring consistent implementation across locations'
+  ],
+
+  // Leadership & Governance
+  leadership: [
+    'Aligning leadership team on transformation vision',
+    'Managing stakeholder expectations',
+    'Communicating change effectively at scale',
+    'Building internal change management capabilities',
+    'Succession planning during organizational change',
+    'Board reporting on transformation progress'
+  ],
+
+  // Strategic & Competitive
+  strategic: [
+    'Keeping pace with industry disruption',
+    'Competitive pressure to transform faster',
+    'Technology obsolescence and upgrade cycles',
+    'Regulatory compliance during change',
+    'Market timing for transformation initiatives',
+    'Balancing innovation with operational stability'
+  ]
+};
+
+async function generateBlogPost(topic, targetDate, existingPosts = []) {
+  const season = getCurrentSeason();
+  const seasonalContext = season.context;
+  const seasonalThemes = season.themes.join(', ');
+  
+  // Get relevant pain points for context
+  const allPainPoints = Object.values(PAIN_POINTS).flat();
+  const relevantPainPoints = allPainPoints.slice(0, 5).join(', ');
+  
+  // Find related posts for potential cross-linking
+  const relatedPosts = findRelatedPosts(topic, ['enterprise', 'transformation', 'leadership'], existingPosts);
+  const relatedContext = relatedPosts.length > 0 
+    ? `\n- Related existing content: ${relatedPosts.map(p => `"${p.title}"`).join(', ')}`
+    : '';
+  
+  const prompt = `Write a professional blog post about "${topic}" for enterprise directors.
+
+CONTEXT:
+- Current business season: ${season.quarter} (${seasonalContext})
+- Seasonal themes: ${seasonalThemes}
+- Key enterprise pain points: ${relevantPainPoints}
+- Audience: Enterprise directors responsible for organizational transformation
+- Approach: Fractal change methodology (small changes that scale naturally)${relatedContext}
+
+REQUIREMENTS:
+- 1000-1400 words with substantial depth
+- Compelling, SEO-optimized title that addresses director-level concerns
+- Practical, actionable insights for large organizations (1000+ employees)
+- Real-world application examples
+- Measurable outcomes and ROI considerations
+- Professional, authoritative tone
+- Focus on incremental change strategies that compound over time
+
+STRUCTURE:
+- Hook that identifies a specific enterprise challenge
+- 3-4 main sections with practical frameworks
+- Concrete implementation steps
+- ROI/success metrics
+- Clear call-to-action for next steps
 
 Return ONLY a valid JSON object with this structure:
 {
-  "title": "Blog post title",
-  "description": "SEO description under 160 characters",
-  "content": "Full blog post content in markdown",
-  "tags": ["tag1", "tag2", "tag3"],
-  "summary": "Brief 2-sentence summary"
+  "title": "Blog post title (optimized for enterprise directors)",
+  "description": "SEO description under 160 characters focusing on business value",
+  "content": "Full blog post content in markdown format",
+  "tags": ["enterprise", "transformation", "leadership", "specific-topic-tags"],
+  "summary": "2-sentence summary highlighting the main value proposition for directors"
 }`;
 
   try {
@@ -116,6 +254,165 @@ function createSlug(title) {
     .trim();
 }
 
+// Business calendar and seasonal themes
+const SEASONAL_THEMES = {
+  // Q1 (Jan-Mar): Planning & Strategy
+  Q1: {
+    months: [1, 2, 3],
+    focus: 'strategic',
+    context: 'New year planning, budget allocation, strategic initiatives',
+    themes: ['strategic planning', 'budget optimization', 'goal setting', 'vision alignment']
+  },
+  
+  // Q2 (Apr-Jun): Implementation & Growth
+  Q2: {
+    months: [4, 5, 6],
+    focus: 'leadership',
+    context: 'Implementation phase, team building, performance reviews',
+    themes: ['team development', 'performance management', 'leadership development', 'culture building']
+  },
+  
+  // Q3 (Jul-Sep): Execution & Optimization
+  Q3: {
+    months: [7, 8, 9],
+    focus: 'operational',
+    context: 'Mid-year execution, process optimization, efficiency drives',
+    themes: ['operational efficiency', 'process improvement', 'productivity', 'cost optimization']
+  },
+  
+  // Q4 (Oct-Dec): Results & Future Planning
+  Q4: {
+    months: [10, 11, 12],
+    focus: 'innovation',
+    context: 'Year-end results, future planning, innovation initiatives',
+    themes: ['innovation', 'future planning', 'digital transformation', 'competitive advantage']
+  }
+};
+
+function getCurrentSeason() {
+  const now = new Date();
+  const month = now.getMonth() + 1; // JavaScript months are 0-indexed
+  
+  for (const [quarter, data] of Object.entries(SEASONAL_THEMES)) {
+    if (data.months.includes(month)) {
+      return { quarter, ...data };
+    }
+  }
+  
+  return SEASONAL_THEMES.Q1; // Default fallback
+}
+
+// Function to analyze existing blog posts for cross-linking
+async function analyzeExistingContent() {
+  try {
+    const blogDir = path.join('../../apps/blog/src/content/blog');
+    const draftsDir = path.join('../../apps/blog/src/content/drafts');
+    
+    const existingPosts = [];
+    
+    // Read published posts
+    try {
+      const blogFiles = await fs.readdir(blogDir);
+      for (const file of blogFiles) {
+        if (file.endsWith('.md')) {
+          const content = await fs.readFile(path.join(blogDir, file), 'utf8');
+          const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+          if (frontmatterMatch) {
+            const frontmatter = frontmatterMatch[1];
+            const titleMatch = frontmatter.match(/title:\s*['"](.+)['"]/);
+            const tagsMatch = frontmatter.match(/tags:\s*\[(.*?)\]/);
+            
+            if (titleMatch) {
+              existingPosts.push({
+                filename: file,
+                title: titleMatch[1],
+                tags: tagsMatch ? tagsMatch[1].split(',').map(t => t.trim().replace(/['"]/g, '')) : [],
+                type: 'published'
+              });
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.log('No published posts found or error reading blog directory');
+    }
+    
+    // Read draft posts
+    try {
+      const draftFiles = await fs.readdir(draftsDir);
+      for (const file of draftFiles) {
+        if (file.endsWith('.md') && file !== '.gitkeep') {
+          const content = await fs.readFile(path.join(draftsDir, file), 'utf8');
+          const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+          if (frontmatterMatch) {
+            const frontmatter = frontmatterMatch[1];
+            const titleMatch = frontmatter.match(/title:\s*['"](.+)['"]/);
+            const tagsMatch = frontmatter.match(/tags:\s*\[(.*?)\]/);
+            
+            if (titleMatch) {
+              existingPosts.push({
+                filename: file,
+                title: titleMatch[1],
+                tags: tagsMatch ? tagsMatch[1].split(',').map(t => t.trim().replace(/['"]/g, '')) : [],
+                type: 'draft'
+              });
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.log('No draft posts found or error reading drafts directory');
+    }
+    
+    console.log(`📚 Found ${existingPosts.length} existing posts for cross-linking analysis`);
+    return existingPosts;
+  } catch (error) {
+    console.error('Error analyzing existing content:', error);
+    return [];
+  }
+}
+
+// Function to find related posts for cross-linking
+function findRelatedPosts(currentTopic, currentTags, existingPosts) {
+  const relatedPosts = [];
+  const topicWords = currentTopic.toLowerCase().split(' ').filter(word => word.length > 3);
+  
+  for (const post of existingPosts) {
+    let relevanceScore = 0;
+    
+    // Check title similarity
+    const postTitleWords = post.title.toLowerCase().split(' ');
+    const titleMatches = topicWords.filter(word => 
+      postTitleWords.some(titleWord => titleWord.includes(word) || word.includes(titleWord))
+    );
+    relevanceScore += titleMatches.length * 2;
+    
+    // Check tag similarity
+    const tagMatches = currentTags.filter(tag => 
+      post.tags.some(postTag => 
+        postTag.toLowerCase().includes(tag.toLowerCase()) || 
+        tag.toLowerCase().includes(postTag.toLowerCase())
+      )
+    );
+    relevanceScore += tagMatches.length * 3;
+    
+    // Add to related if score is high enough
+    if (relevanceScore >= 2) {
+      relatedPosts.push({
+        ...post,
+        relevanceScore,
+        titleMatches,
+        tagMatches
+      });
+    }
+  }
+  
+  // Sort by relevance and return top 3
+  return relatedPosts
+    .sort((a, b) => b.relevanceScore - a.relevanceScore)
+    .slice(0, 3);
+}
+
 function getNextPublicationDate(targetDate) {
   if (targetDate) {
     return new Date(targetDate);
@@ -129,7 +426,7 @@ function getNextPublicationDate(targetDate) {
   return nextTues < nextFri ? nextTues : nextFri;
 }
 
-async function createBlogPostFile(postData) {
+async function createBlogPostFile(postData, existingPosts = []) {
   const { title, description, content, tags, targetDate, topic } = postData;
   const slug = createSlug(title);
   const pubDate = getNextPublicationDate(targetDate);
@@ -139,6 +436,23 @@ async function createBlogPostFile(postData) {
   console.log('- Slug:', slug);
   console.log('- Pub Date:', format(pubDate, 'yyyy-MM-dd'));
   
+  // Find related posts for cross-linking
+  const relatedPosts = findRelatedPosts(topic, tags, existingPosts);
+  
+  // Add cross-links to content if related posts exist
+  let enhancedContent = content;
+  if (relatedPosts.length > 0) {
+    console.log(`🔗 Adding cross-links to ${relatedPosts.length} related posts`);
+    
+    const crossLinks = relatedPosts.map(post => {
+      const postSlug = createSlug(post.title);
+      const linkPath = post.type === 'published' ? `/blog/${postSlug.replace('.md', '')}/` : '#';
+      return `- [${post.title}](${linkPath})`;
+    }).join('\n');
+    
+    enhancedContent += `\n\n## Related Articles\n\n${crossLinks}`;
+  }
+  
   const frontmatter = `---
 title: '${title.replace(/'/g, "''")}'
 description: '${description.replace(/'/g, "''")}'
@@ -147,7 +461,7 @@ heroImage: '/blog-placeholder-1.jpg'
 tags: [${tags.map(tag => `'${tag}'`).join(', ')}]
 ---
 
-${content}`;
+${enhancedContent}`;
 
   const filename = `${slug}.md`;
   const filepath = path.join('../../apps/blog/src/content/drafts', filename);
@@ -176,6 +490,35 @@ ${content}`;
   }
 }
 
+function selectIntelligentTopic() {
+  const season = getCurrentSeason();
+  const focusCategory = season.focus;
+  
+  console.log(`📅 Current season: ${season.quarter} - Focus: ${focusCategory}`);
+  console.log(`🎯 Context: ${season.context}`);
+  
+  // Get topics from the seasonal focus category
+  const seasonalTopics = CONTENT_THEMES[focusCategory] || [];
+  
+  // Add some variety by including tactical topics (always relevant)
+  const tacticalTopics = CONTENT_THEMES.tactical || [];
+  
+  // 70% seasonal focus, 30% tactical variety
+  const topicPool = [
+    ...seasonalTopics,
+    ...seasonalTopics, // Double weight for seasonal
+    ...tacticalTopics
+  ];
+  
+  if (topicPool.length === 0) {
+    // Fallback to all topics if something goes wrong
+    const allTopics = Object.values(CONTENT_THEMES).flat();
+    return allTopics[Math.floor(Math.random() * allTopics.length)];
+  }
+  
+  return topicPool[Math.floor(Math.random() * topicPool.length)];
+}
+
 async function main() {
   try {
     console.log('🤖 Starting AI content generation...');
@@ -185,19 +528,23 @@ async function main() {
       throw new Error('OPENAI_API_KEY environment variable is required');
     }
     
-    // Get topic (from input or random selection)
+    // Analyze existing content for intelligent topic selection and cross-linking
+    console.log('📚 Step 1: Analyzing existing content...');
+    const existingPosts = await analyzeExistingContent();
+    
+    // Get topic (from input or intelligent selection)
     const topicOverride = process.env.TOPIC_OVERRIDE;
-    const topic = topicOverride || CONTENT_THEMES[Math.floor(Math.random() * CONTENT_THEMES.length)];
+    const topic = topicOverride || selectIntelligentTopic(existingPosts);
     
     console.log(`📝 Generating content for topic: ${topic}`);
     
-    // Generate the blog post
-    console.log('🎯 Step 1: Generating blog post content...');
-    const postData = await generateBlogPost(topic, process.env.TARGET_DATE);
+    // Generate the blog post with cross-linking context
+    console.log('🎯 Step 2: Generating blog post content...');
+    const postData = await generateBlogPost(topic, process.env.TARGET_DATE, existingPosts);
     
     // Create the blog post file
-    console.log('💾 Step 2: Creating blog post file...');
-    const fileInfo = await createBlogPostFile(postData);
+    console.log('💾 Step 3: Creating blog post file...');
+    const fileInfo = await createBlogPostFile(postData, existingPosts);
     
     console.log(`✅ Content generated successfully!`);
     console.log(`📄 File: ${fileInfo.filename}`);
@@ -237,4 +584,12 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { generateBlogPost, createBlogPostFile, CONTENT_THEMES, PAIN_POINTS };
+module.exports = { 
+  generateBlogPost, 
+  createBlogPostFile, 
+  CONTENT_THEMES, 
+  PAIN_POINTS, 
+  SEASONAL_THEMES,
+  getCurrentSeason,
+  selectIntelligentTopic
+};
