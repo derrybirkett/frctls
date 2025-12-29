@@ -36,6 +36,11 @@ jobs:
         with:
           version: 10.15.1
 
+      - name: Approve build scripts (sharp, esbuild)
+        run: |
+          cd apps/blog
+          pnpm approve-builds esbuild sharp || true
+
       - name: Install dependencies
         run: |
           cd apps/blog
