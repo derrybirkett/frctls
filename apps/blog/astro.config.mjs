@@ -6,7 +6,7 @@ import { defineConfig } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://fractalsofchange.github.io',
+	site: 'https://derrybirkett.github.io',
 	base: '/frctls',
 	integrations: [mdx(), sitemap()],
 	build: {
