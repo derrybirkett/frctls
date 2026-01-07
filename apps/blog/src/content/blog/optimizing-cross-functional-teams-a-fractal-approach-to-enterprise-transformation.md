@@ -2,7 +2,7 @@
 title: 'Optimizing Cross-Functional Teams: A Fractal Approach to Enterprise Transformation'
 description: 'Discover how to leverage cross-functional teams for sustainable change and competitive advantage in large organizations.'
 pubDate: '2025-12-30'
-heroImage: '/blog-placeholder-1.jpg'
+heroImage: '../../assets/blog-placeholder-1.jpg'
 tags: ['enterprise', 'transformation', 'leadership', 'cross-functional-teams', 'fractal-change']
 ---
 

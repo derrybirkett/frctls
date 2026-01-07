@@ -2,7 +2,7 @@
 title: 'Strategic Change vs. Tactical Fixes: Optimizing Transformation for Enterprise Directors'
 description: 'Discover how to navigate strategic change and tactical fixes to maximize ROI and drive sustainable transformation in large organizations.'
 pubDate: '2026-01-06'
-heroImage: '/blog-placeholder-1.jpg'
+heroImage: '../../assets/blog-placeholder-1.jpg'
 tags: ['enterprise', 'transformation', 'leadership', 'strategic-change', 'tactical-fixes']
 ---
 

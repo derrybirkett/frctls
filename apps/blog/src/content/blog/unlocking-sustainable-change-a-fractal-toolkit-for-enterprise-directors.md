@@ -2,7 +2,7 @@
 title: 'Unlocking Sustainable Change: A Fractal Toolkit for Enterprise Directors'
 description: 'Empower your organization with a practical guide to implementing incremental changes that drive long-term value and competitive advantage.'
 pubDate: '2025-12-23'
-heroImage: '/blog-placeholder-1.jpg'
+heroImage: '../../assets/blog-placeholder-1.jpg'
 tags: ['enterprise', 'transformation', 'leadership', 'change-management', 'fractal-methodology']
 ---
 
