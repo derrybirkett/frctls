@@ -87,6 +87,7 @@ jobs:
       - name: Create Pull Request for published content
         if: steps.check-content.outputs.ready_posts == 'true'
         uses: peter-evans/create-pull-request@v5
+        id: create-pr
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "feat: publish scheduled blog content"
@@ -100,14 +101,12 @@ jobs:
             - Moved scheduled posts from drafts to published
             - Content will be automatically deployed after merge
             
-            ### Next Steps
-            1. Review the published content
-            2. Merge to trigger deployment
-            3. Content will be live on GitHub Pages
-            
-            *This PR was created automatically by the content automation workflow.*
+            *This PR was created automatically by the content automation workflow and will be auto-merged once checks pass.*
           branch: automated/publish-content-${{ github.run_number }}
           delete-branch: true
+          auto-merge: true
+          auto-merge-method: squash
+          labels: automated,content-publish
 
       - name: Generate content ideas (manual trigger)
         if: github.event.inputs.action == 'generate-content-ideas'
