@@ -52,11 +52,18 @@ async function getNextRoadmapIssue(priorityFilter) {
     )
   );
 
+  // Filter out agent suggestions that need approval
+  const approvedIssues = issues.filter(issue => {
+    const labels = issue.labels.map(l => l.name);
+    // Skip issues with 'needs-approval' or 'agent-suggestion' labels
+    return !labels.includes('needs-approval') && !labels.includes('agent-suggestion');
+  });
+
   // Filter unassigned issues
-  const unassigned = issues.filter(issue => issue.assignees.length === 0);
+  const unassigned = approvedIssues.filter(issue => issue.assignees.length === 0);
 
   if (unassigned.length === 0) {
-    console.log('❌ No unassigned issues found');
+    console.log('❌ No unassigned approved roadmap issues found');
     return null;
   }
 

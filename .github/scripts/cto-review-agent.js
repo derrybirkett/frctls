@@ -193,25 +193,48 @@ ${review.summary}
 }
 
 /**
- * Create issue if needed
+ * Create issues for agent suggestions
  */
-function createIssue(prNumber, review) {
-  if (!review.create_issue) return;
+function createIssuesForSuggestions(prNumber, review) {
+  // Create issues for all suggestions (not just when create_issue flag is true)
+  if (!review.issues || review.issues.length === 0) return;
 
-  console.log('\n📋 Creating follow-up issue...');
+  console.log('\n📋 Creating issues for agent suggestions...');
 
-  const issueBody = `${review.issue_body}
+  review.issues.forEach((issue, index) => {
+    // Only create issues for suggestions and minor/major issues
+    // Skip critical issues as they should block the PR
+    if (issue.severity === 'critical') return;
+
+    const severityLabel = issue.severity === 'major' ? 'priority-medium' : 'priority-low';
+    const categoryLabel = issue.category || 'technical-debt';
+    
+    const issueBody = `## Agent Suggestion from PR Review
+
+**Original PR:** #${prNumber}
+**Severity:** ${issue.severity}
+**Category:** ${issue.category}
+
+### Description
+${issue.description}
+
+### Suggested Solution
+${issue.suggestion}
 
 ---
-**Related PR:** #${prNumber}
-**Created by:** CTO Review Agent`;
+**Status:** Needs CPO approval before adding to roadmap
+**Created by:** CTO Review Agent
+**Labels:** This issue requires CPO triage and approval`;
 
-  try {
-    exec(`gh issue create --title "${review.issue_title}" --body "${issueBody.replace(/"/g, '\\"')}" --label "technical-debt,cto-review"`);
-    console.log('✅ Issue created');
-  } catch (error) {
-    console.error('⚠️  Failed to create issue');
-  }
+    const issueTitle = `[Agent Suggestion] ${issue.title}`;
+
+    try {
+      exec(`gh issue create --title "${issueTitle}" --body "${issueBody.replace(/"/g, '\\"')}" --label "agent-suggestion,needs-approval,${severityLabel},${categoryLabel}"`);
+      console.log(`✅ Issue created: ${issue.title}`);
+    } catch (error) {
+      console.error(`⚠️  Failed to create issue: ${issue.title}`);
+    }
+  });
 }
 
 /**
@@ -235,8 +258,8 @@ async function main() {
     // Post review
     postReview(pr.number, review);
 
-    // Create issue if needed
-    createIssue(pr.number, review);
+    // Create issues for suggestions (for CPO triage)
+    createIssuesForSuggestions(pr.number, review);
 
     // Set output for workflow
     const shouldBlock = review.decision === 'REQUEST_CHANGES';

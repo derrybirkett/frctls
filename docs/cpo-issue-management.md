@@ -15,6 +15,13 @@ The CPO uses GitHub Issues to manage the implementation roadmap from [code-revie
 - **Collaboration**: Discussions happen in context
 - **Automation**: Can trigger automated agent workflows
 
+### Two Types of Issues
+
+1. **Roadmap Tasks** - Manually created from recommendations document
+2. **Agent Suggestions** - Auto-created by CTO/CISO review agents during PRs
+   - Require CPO triage before implementation
+   - See: [CPO Agent Suggestion Triage Guide](cpo-agent-suggestion-triage.md)
+
 ---
 
 ## 📋 Creating Roadmap Tasks
