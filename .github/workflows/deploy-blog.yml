@@ -59,12 +59,49 @@ jobs:
         with:
           path: apps/blog/dist
 
+  test:
+    runs-on: ubuntu-latest
+    needs: [build]
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.1
+
+      - name: Install dependencies
+        run: |
+          cd apps/blog
+          pnpm install
+
+      - name: Run tests
+        run: |
+          cd apps/blog
+          # Add your test command here when tests are implemented
+          # pnpm test || true
+
+      - name: Publish test results to Platform
+        uses: cloudbees-io-gha/publish-test-results@v2.0.1
+        with:
+          test-type: junit
+          results-path: test-results/**/*.xml
+
   deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, test]
     permissions:
       pages: write
       id-token: write
