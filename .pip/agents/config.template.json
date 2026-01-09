@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": ".pip Agentic Workflow Configuration",
+  "description": "Configuration for AI-powered autonomous development workflow",
+  
+  "ai_provider": {
+    "type": "openai",
+    "model": "gpt-4-turbo-preview",
+    "api_key_env": "OPENAI_API_KEY",
+    "temperature": {
+      "implementation": 0.3,
+      "cto_review": 0.2,
+      "ciso_review": 0.1
+    }
+  },
+  
+  "review_agents": {
+    "cto": {
+      "enabled": true,
+      "auto_create_issues": true,
+      "block_on": "REQUEST_CHANGES",
+      "review_criteria": [
+        "architecture",
+        "performance",
+        "testing",
+        "best-practices",
+        "documentation"
+      ]
+    },
+    "ciso": {
+      "enabled": true,
+      "auto_create_issues": true,
+      "block_on": "critical",
+      "scan_for": [
+        "credentials",
+        "sql-injection",
+        "xss",
+        "auth-bypasses",
+        "insecure-dependencies",
+        "data-exposure"
+      ]
+    }
+  },
+  
+  "autonomous_agent": {
+    "enabled": true,
+    "schedule": "0 */6 * * *",
+    "priority_filter": "high",
+    "max_concurrent_prs": 1,
+    "skip_labels": ["needs-approval", "agent-suggestion"],
+    "required_labels": ["roadmap"]
+  },
+  
+  "auto_merge": {
+    "enabled": true,
+    "branch_pattern": "automated/*",
+    "require_all_reviews": true,
+    "require_checks_pass": true,
+    "merge_method": "squash",
+    "delete_branch": true
+  },
+  
+  "product_workflow": {
+    "cpo_triage_required": true,
+    "agent_suggestions_label": "agent-suggestion",
+    "needs_approval_label": "needs-approval",
+    "roadmap_label": "roadmap",
+    "triage_schedule": "weekly"
+  },
+  
+  "github": {
+    "token_env": "GITHUB_TOKEN",
+    "default_labels": {
+      "priority_high": "priority-high",
+      "priority_medium": "priority-medium",
+      "priority_low": "priority-low",
+      "security": "security",
+      "technical_debt": "technical-debt"
+    }
+  }
+}
