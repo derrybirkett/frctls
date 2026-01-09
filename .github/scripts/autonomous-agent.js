@@ -225,8 +225,14 @@ async function applyChanges(implementation) {
     // Create directory if needed
     await fs.mkdir(dir, { recursive: true });
 
+    // Handle JSON files - ensure content is a string
+    let content = file.content;
+    if (typeof content === 'object' && file.path.endsWith('.json')) {
+      content = JSON.stringify(content, null, 2);
+    }
+
     // Write file
-    await fs.writeFile(fullPath, file.content, 'utf8');
+    await fs.writeFile(fullPath, content, 'utf8');
     console.log(`  ✅ ${file.action}: ${file.path}`);
   }
 }
