@@ -43,6 +43,16 @@ pnpm add -D nx @nx/workspace
 nx run infra:up
 ```
 
+## Development Roadmap
+
+This project has an active roadmap of prioritized improvements. See [docs/code-review-recommendations.md](docs/code-review-recommendations.md) for:
+- High-priority security and configuration fixes
+- Testing and quality improvements
+- Performance optimizations
+- Feature enhancements
+
+Agents and contributors should review this roadmap before starting work.
+
 ## Status
 
 🚧 **In Development** - Project bootstrapped 2025-12-09
