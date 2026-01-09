@@ -238,6 +238,18 @@ async function main() {
     // Create issue if needed
     createIssue(pr.number, review);
 
+    // Set output for workflow
+    const shouldBlock = review.decision === 'REQUEST_CHANGES';
+    console.log(`\n🚦 Should block merge: ${shouldBlock}`);
+    
+    // Write to GitHub Actions output
+    if (process.env.GITHUB_OUTPUT) {
+      require('fs').appendFileSync(
+        process.env.GITHUB_OUTPUT,
+        `should_block=${shouldBlock}\n`
+      );
+    }
+
     console.log('\n🎉 CTO review complete!');
   } catch (error) {
     console.error('\n❌ Error:', error.message);

@@ -281,6 +281,17 @@ async function main() {
     // Create security issue if needed
     createSecurityIssue(pr.number, review);
 
+    // Set output for workflow
+    console.log(`\n🚦 Should block merge: ${review.block_merge}`);
+    
+    // Write to GitHub Actions output
+    if (process.env.GITHUB_OUTPUT) {
+      require('fs').appendFileSync(
+        process.env.GITHUB_OUTPUT,
+        `should_block=${review.block_merge}\n`
+      );
+    }
+
     if (review.block_merge) {
       console.log('\n🚫 MERGE BLOCKED due to critical security issues');
       process.exit(1);
