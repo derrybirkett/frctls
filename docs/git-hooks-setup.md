@@ -73,7 +73,38 @@ In rare emergencies, you can bypass hooks with:
 git commit --no-verify -m "emergency commit"
 ```
 
-**⚠️ WARNING**: Only use `--no-verify` in true emergencies and ensure you follow up with proper process.
+**⚠️ WARNING**: Only use `--no-verify` in true emergencies.
+
+### When to Use Emergency Bypass
+
+Emergency bypass should only be used when:
+- Production is down and a hotfix is critically urgent
+- CI/CD pipeline is broken and blocking all work
+- The hook itself is malfunctioning and needs immediate fix
+
+### Post-Emergency Process
+
+After making an emergency commit:
+
+1. **Immediate notification**: Alert the team in your project chat/channel
+2. **Create tracking issue**: Document why the bypass was necessary
+3. **Create follow-up PR**: Move the emergency commit to a proper feature branch
+4. **Request review**: Have at least one team member review the emergency changes
+5. **Update runbook**: If this emergency type could recur, document the proper procedure
+
+Example follow-up workflow:
+```bash
+# Create a proper feature branch from main
+git checkout -b hotfix/emergency-followup main
+
+# Cherry-pick the emergency commit
+git cherry-pick <emergency-commit-sha>
+
+# Create PR for review
+gh pr create --title "Review: Emergency commit for [issue]"
+```
+
+**Remember**: Emergency bypasses compromise code quality gates. Every bypass should be reviewed and justified.
 
 ## Related Files
 

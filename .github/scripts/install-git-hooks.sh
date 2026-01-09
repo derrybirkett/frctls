@@ -16,9 +16,20 @@ fi
 
 # Install pre-commit hook
 if [ -f "$SCRIPT_DIR/pre-commit-hook.sh" ]; then
-    cp "$SCRIPT_DIR/pre-commit-hook.sh" "$HOOKS_DIR/pre-commit"
-    chmod +x "$HOOKS_DIR/pre-commit"
-    echo "✅ Pre-commit hook installed"
+    # Check if hook is already installed and up-to-date
+    if [ -f "$HOOKS_DIR/pre-commit" ]; then
+        if cmp -s "$SCRIPT_DIR/pre-commit-hook.sh" "$HOOKS_DIR/pre-commit"; then
+            echo "✅ Pre-commit hook is already up-to-date"
+        else
+            cp "$SCRIPT_DIR/pre-commit-hook.sh" "$HOOKS_DIR/pre-commit"
+            chmod +x "$HOOKS_DIR/pre-commit"
+            echo "✅ Pre-commit hook updated"
+        fi
+    else
+        cp "$SCRIPT_DIR/pre-commit-hook.sh" "$HOOKS_DIR/pre-commit"
+        chmod +x "$HOOKS_DIR/pre-commit"
+        echo "✅ Pre-commit hook installed"
+    fi
 else
     echo "❌ Error: pre-commit-hook.sh not found"
     exit 1
