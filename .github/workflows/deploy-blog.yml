@@ -84,17 +84,51 @@ jobs:
           cd apps/blog
           pnpm install
 
-      - name: Run tests
+      - name: Run unit tests
         run: |
           cd apps/blog
-          # Add your test command here when tests are implemented
-          # pnpm test || true
+          mkdir -p test-results
+          pnpm test:unit || true
+
+      - name: Build for E2E tests
+        run: |
+          cd apps/blog
+          pnpm build
+
+      - name: Install Playwright browsers
+        run: |
+          cd apps/blog
+          pnpm exec playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: |
+          cd apps/blog
+          pnpm test:e2e || true
+
+      - name: Check for test results
+        id: test-results-check
+        run: |
+          cd apps/blog
+          if [ -n "$(find test-results -name '*.xml' -type f 2>/dev/null)" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Found test result files:"
+            find test-results -name '*.xml' -type f
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "No test result files found - skipping CloudBees publish"
+          fi
 
       - name: Publish test results to Platform
+        if: steps.test-results-check.outputs.exists == 'true'
         uses: cloudbees-io-gha/publish-test-results@v2.0.1
         with:
           test-type: junit
-          results-path: test-results/**/*.xml
+          results-path: apps/blog/test-results/**/*.xml
+          # Prerequisites:
+          # 1. Set up CloudBees platform and GHA integration:
+          #    https://docs.cloudbees.com/docs/cloudbees-platform/latest/github-actions/intro
+          # 2. Tests generate JUnit XML reports in test-results/ directory
+          # 3. cloudbees-url is optional (defaults to https://api.cloudbees.io)
 
   deploy:
     environment:

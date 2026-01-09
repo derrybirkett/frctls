@@ -23,6 +23,7 @@ Log new agent activity for each commit: who did what and why.
 | 2025-12-11 | CTO | feat/github-pages-deployment | Implemented GitHub Pages deployment and content automation | Configured Astro for GitHub Pages, created automated deployment workflow, set up content scheduling system with Tuesday/Friday publication schedule | .github/workflows/, docs/deployment.md, apps/blog/src/content/drafts/ |
 | 2026-01-07 | Auto | dc8444c | Enabled auto-merge for content automation PRs | Fixed workflow to automatically merge PRs after status checks pass; added auto-merge configuration to peter-evans/create-pull-request action | .github/workflows/content-automation.yml |
 | 2026-01-07 | Auto | feat/add-cloudbees-test-results-action | Added CloudBees test results publishing action to blog deployment workflow | Integrated CloudBees platform for test result tracking and analytics; added test job with publish-test-results action (v2.0.1) configured for JUnit format | .github/workflows/deploy-blog.yml |
+| 2026-01-09 | Auto | feat/setup-testing-framework | Set up Vitest and Playwright testing frameworks with example tests | Implemented unit tests (Vitest) and E2E tests (Playwright) per tech stack requirements; configured JUnit XML output for CloudBees integration; added test scripts and updated workflow | apps/blog/package.json, vitest.config.ts, playwright.config.ts, e2e/, src/consts.test.ts, .github/workflows/deploy-blog.yml |
 | YYYY-MM-DD | <agent> | <hash or #PR> | <summary> | <decision/assumption> | <issue/docs> |
 
 Guidance:
