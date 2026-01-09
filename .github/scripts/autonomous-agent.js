@@ -66,11 +66,15 @@ async function getNextRoadmapIssue(priorityFilter) {
 }
 
 /**
- * Assign issue to bot
+ * Assign issue to bot (add comment instead since bot can't self-assign)
  */
 function assignIssue(issueNumber) {
-  console.log(`\n📌 Assigning issue #${issueNumber} to bot...`);
-  exec(`gh issue edit ${issueNumber} --add-assignee @me`);
+  console.log(`\n📌 Marking issue #${issueNumber} as in-progress...`);
+  try {
+    exec(`gh issue comment ${issueNumber} --body "🤖 Autonomous agent is now working on this issue..."`);
+  } catch (error) {
+    console.log('⚠️  Could not comment on issue (continuing anyway)');
+  }
 }
 
 /**
