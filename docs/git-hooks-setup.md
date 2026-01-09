@@ -2,9 +2,11 @@
 
 This document explains the git hooks setup for this project and how to ensure they're properly installed.
 
-## Issue Discovered
+## Issue Discovered (RESOLVED)
 
-During development, we discovered that the `.pip` framework's git hooks were not automatically installed during project bootstrapping. This allowed direct commits to the `main` branch, which violates the framework's intended workflow.
+During development, we discovered that git hooks were not enforcing the feature branch workflow. This has been **resolved** by implementing a repository-specific pre-commit hook.
+
+**Solution:** The pre-commit hook is now version-controlled in `.github/scripts/` and can be installed via `install-git-hooks.sh`.
 
 ## What Git Hooks Do
 
@@ -12,19 +14,20 @@ The `.pip` framework includes git hooks that:
 - **Prevent direct commits to `main` branch** - Enforces feature branch workflow
 - **Check for secrets** - Prevents accidental commit of sensitive data (if git-secrets is installed)
 
-## Manual Installation (Current Fix)
+## Installation
 
-If git hooks aren't working, install them manually:
+Git hooks are now maintained in this repository. Install them with:
 
 ```bash
-# Install the proper git hooks
-.pip/hooks/install-hooks.sh
+# Install the pre-commit hook
+.github/scripts/install-git-hooks.sh
 ```
 
 This will:
 - Copy the pre-commit hook to `.git/hooks/`
 - Make it executable
 - Block future direct commits to main
+- Maintain git-secrets integration (if installed)
 
 ## Verification
 
@@ -58,9 +61,9 @@ git push origin feat/your-feature
 gh pr create
 ```
 
-## Framework Fix
+## Framework Status
 
-This issue has been reported to the `.pip` framework. The bootstrap scripts should be updated to automatically install git hooks during project setup.
+✅ **RESOLVED**: Git hooks are now version-controlled in this repository and work independently of the `.pip` framework setup.
 
 ## Emergency Bypass
 
@@ -74,7 +77,7 @@ git commit --no-verify -m "emergency commit"
 
 ## Related Files
 
-- `.pip/hooks/install-hooks.sh` - Hook installation script
-- `.pip/hooks/pre-commit` - The actual pre-commit hook
-- `.pip/hooks/README.md` - Detailed hook documentation
-- `.pip/CONTRIBUTING.md` - Framework contribution guidelines
+- `.github/scripts/pre-commit-hook.sh` - The pre-commit hook source
+- `.github/scripts/install-git-hooks.sh` - Hook installation script
+- `docs/git-hooks-setup.md` - This documentation
+- `AGENTS.md` - Agent guidelines (references feature branch workflow)
