@@ -43,6 +43,19 @@ As of 2026-01-09, focus on:
 
 See full details and implementation order in [docs/code-review-recommendations.md](docs/code-review-recommendations.md)
 
+### GitHub Issues Integration
+
+The CPO creates and manages roadmap tasks as GitHub Issues:
+- **View roadmap issues**: [Filter by `roadmap` label](../../issues?q=is%3Aissue+label%3Aroadmap)
+- **CPO guide**: [docs/cpo-issue-management.md](docs/cpo-issue-management.md)
+- **Create tasks**: Use [🎯 Roadmap Task template](../../issues/new?template=roadmap-task.yml)
+
+When working on issues:
+1. Check for existing issue before starting
+2. Assign yourself to the issue
+3. Reference issue in commits: `feat: implement HP-1 (#123)`
+4. Link PR with `Fixes #123` in description
+
 ### Success Metrics
 
 Track progress using metrics defined in the recommendations document:
