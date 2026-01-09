@@ -43,6 +43,20 @@ pnpm add -D nx @nx/workspace
 nx run infra:up
 ```
 
+## Development Roadmap
+
+This project has an active roadmap of prioritized improvements:
+- **Recommendations**: [docs/code-review-recommendations.md](docs/code-review-recommendations.md) - Complete roadmap with 13 prioritized items
+- **GitHub Issues**: [View roadmap tasks](../../issues?q=is%3Aissue+label%3Aroadmap) - Track progress and claim work
+- **CPO Guide**: [docs/cpo-issue-management.md](docs/cpo-issue-management.md) - How to manage tasks via issues
+
+### Quick Start for Contributors
+
+1. Review [roadmap recommendations](docs/code-review-recommendations.md)
+2. Find available tasks in [GitHub Issues](../../issues?q=is%3Aissue+label%3Aroadmap+label%3Aready)
+3. Assign yourself and create feature branch
+4. Follow working process in [AGENTS.md](AGENTS.md)
+
 ## Status
 
 🚧 **In Development** - Project bootstrapped 2025-12-09

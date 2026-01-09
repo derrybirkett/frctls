@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 📚 Documentation
+    url: https://github.com/derrybirkett/frctls/tree/main/docs
+    about: View project documentation and guides
+  - name: 💬 Discussions
+    url: https://github.com/derrybirkett/frctls/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 🗺️ Code Review Recommendations
+    url: https://github.com/derrybirkett/frctls/blob/main/docs/code-review-recommendations.md
+    about: View the complete roadmap of prioritized improvements
