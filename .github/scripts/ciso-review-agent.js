@@ -222,38 +222,69 @@ ${review.summary}
 }
 
 /**
- * Create security issue if needed
+ * Create security issues for suggestions
  */
 function createSecurityIssue(prNumber, review) {
-  if (!review.create_security_issue || review.vulnerabilities.length === 0) return;
+  // Only create issues for actual vulnerabilities
+  if (!review.vulnerabilities || review.vulnerabilities.length === 0) return;
 
-  console.log('\n🚨 Creating security issue...');
+  console.log('\n📋 Creating security issues...');
 
-  const vulnList = review.vulnerabilities
-    .map(v => `- **${v.title}** (${v.severity}): ${v.description}`)
-    .join('\n');
+  review.vulnerabilities.forEach((vuln, index) => {
+    // Critical vulnerabilities block merge, so create issue for tracking
+    // Medium/High create issues for CPO triage
+    const needsApproval = vuln.severity !== 'critical';
+    const labels = needsApproval 
+      ? `security,agent-suggestion,needs-approval,priority-${vuln.severity}`
+      : `security,priority-critical`;
 
-  const issueBody = `## 🔒 Security Vulnerabilities Found
+    const issueBody = needsApproval ? `## 🔒 Security Suggestion from PR Review
 
+**Original PR:** #${prNumber}
 **Risk Level:** ${review.risk_level.toUpperCase()}
+**Severity:** ${vuln.severity}
 
-### Vulnerabilities
-${vulnList}
+### Vulnerability
+${vuln.title}
 
 ### Details
-${review.summary}
+${vuln.description}
+
+### Recommendation
+${vuln.recommendation}
+
+---
+**Status:** Needs CPO approval before adding to roadmap
+**Detected by:** CISO Review Agent` : `## 🔒 Critical Security Vulnerability
+
+**Risk Level:** ${review.risk_level.toUpperCase()}
+**Severity:** ${vuln.severity}
+
+### Vulnerability
+${vuln.title}
+
+### Details
+${vuln.description}
+
+### Recommendation
+${vuln.recommendation}
 
 ---
 **Related PR:** #${prNumber}
-**Detected by:** CISO Review Agent
-**Action Required:** Address before merging PR`;
+**Action Required:** Must be addressed before merging
+**Detected by:** CISO Review Agent`;
 
-  try {
-    exec(`gh issue create --title "🔒 Security: ${review.vulnerabilities[0].title}" --body "${issueBody.replace(/"/g, '\\"')}" --label "security,priority-high"`);
-    console.log('✅ Security issue created');
-  } catch (error) {
-    console.error('⚠️  Failed to create security issue');
-  }
+    const issueTitle = needsApproval 
+      ? `[Security Suggestion] ${vuln.title}`
+      : `🔒 CRITICAL: ${vuln.title}`;
+
+    try {
+      exec(`gh issue create --title "${issueTitle}" --body "${issueBody.replace(/"/g, '\\"')}" --label "${labels}"`);
+      console.log(`✅ Security issue created: ${vuln.title}`);
+    } catch (error) {
+      console.error(`⚠️  Failed to create security issue: ${vuln.title}`);
+    }
+  });
 }
 
 /**
