@@ -27,11 +27,12 @@ const CONFIG = {
  */
 function exec(command, options = {}) {
   try {
-    return execSync(command, {
+    const result = execSync(command, {
       encoding: 'utf8',
       stdio: options.silent ? 'pipe' : 'inherit',
       ...options,
-    }).trim();
+    });
+    return result ? result.trim() : '';
   } catch (error) {
     console.error(`Command failed: ${command}`);
     throw error;
