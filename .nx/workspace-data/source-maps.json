@@ -1,0 +1,64 @@
+{
+  "tools/infra": {
+    "root": [
+      "tools/infra/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "tools/infra/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "tools/infra/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.up": [
+      "tools/infra/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.up.executor": [
+      "tools/infra/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.up.options": [
+      "tools/infra/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.up.options.command": [
+      "tools/infra/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.down": [
+      "tools/infra/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.down.executor": [
+      "tools/infra/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.down.options": [
+      "tools/infra/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.down.options.command": [
+      "tools/infra/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.logs": [
+      "tools/infra/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.logs.executor": [
+      "tools/infra/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.logs.options": [
+      "tools/infra/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.logs.options.command": [
+      "tools/infra/project.json",
+      "nx/core/project-json"
+    ]
+  }
+}
