@@ -39,9 +39,31 @@ pnpm add -D nx @nx/workspace
 # Apply infrastructure fragment
 ./.pip/bin/apply-nx-dev-infra.sh
 
+# Configure environment variables
+cp .env.example .env
+# Edit .env and update database credentials as needed
+
 # Start development environment
 nx run infra:up
 ```
+
+### Environment Configuration
+
+The project uses environment variables for sensitive configuration. Before starting:
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit `.env` and update the following variables:
+   - `POSTGRES_PASSWORD`: Change from default for production use
+   - `DB_POSTGRESDB_PASSWORD`: Must match `POSTGRES_PASSWORD`
+   - Other variables can typically use the provided defaults
+
+3. **Important**: Never commit the `.env` file - it contains sensitive credentials
+
+The docker-compose.yml file uses these environment variables with fallback defaults for development.
 
 ## Development Roadmap
 
