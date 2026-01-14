@@ -252,7 +252,7 @@ function runValidation() {
 
   try {
     console.log('  → Installing dependencies...');
-    exec('pnpm install', { silent: true });
+    exec('pnpm install --no-frozen-lockfile', { silent: true });
 
     console.log('  → Checking format...');
     exec('pnpm format:check || true', { silent: true });
@@ -277,6 +277,15 @@ function commitChanges(issue, implementation) {
   const branchName = `automated/implement-${issue.number}`;
   
   try {
+    // Delete existing branch if it exists (local and remote)
+    try {
+      exec(`git branch -D ${branchName}`, { silent: true });
+      exec(`git push origin --delete ${branchName}`, { silent: true });
+      console.log(`🧹 Cleaned up existing branch ${branchName}`);
+    } catch (e) {
+      // Branch doesn't exist, that's fine
+    }
+
     // Create and checkout branch
     exec(`git checkout -b ${branchName}`);
 
