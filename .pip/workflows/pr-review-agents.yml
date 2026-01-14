@@ -1,0 +1,107 @@
+name: PR Review Agents
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  cto-review:
+    name: CTO Technical Review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.1
+
+      - name: Install dependencies
+        run: |
+          cd .github/scripts
+          pnpm install
+
+      - name: Run CTO Review Agent
+        id: cto-review
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          node .github/scripts/cto-review-agent.js
+    outputs:
+      should_block: ${{ steps.cto-review.outputs.should_block || 'false' }}
+
+  ciso-review:
+    name: CISO Security Review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.1
+
+      - name: Install dependencies
+        run: |
+          cd .github/scripts
+          pnpm install
+
+      - name: Run CISO Security Review
+        id: ciso-review
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          node .github/scripts/ciso-review-agent.js
+    outputs:
+      should_block: ${{ steps.ciso-review.outputs.should_block || 'false' }}
+
+  auto-merge:
+    name: Auto-Merge PR
+    runs-on: ubuntu-latest
+    needs: [cto-review, ciso-review]
+    if: |
+      needs.cto-review.outputs.should_block != 'true' &&
+      needs.ciso-review.outputs.should_block != 'true' &&
+      github.event.pull_request.draft == false
+    steps:
+      - name: Wait for other checks
+        run: sleep 30
+
+      - name: Auto-merge PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # Check if PR is from automated branch
+          if [[ "${{ github.event.pull_request.head.ref }}" == automated/* ]]; then
+            echo "🤖 Auto-merging automated PR #${PR_NUMBER}..."
+            gh pr merge ${PR_NUMBER} --auto --squash --repo ${{ github.repository }}
+            echo "✅ Auto-merge enabled for PR #${PR_NUMBER}"
+          else
+            echo "⏭️ Skipping auto-merge: Not an automated PR"
+          fi

@@ -43,7 +43,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd apps/blog
-          pnpm install
+          pnpm install --no-frozen-lockfile
 
       - name: Check for scheduled content
         id: check-content
