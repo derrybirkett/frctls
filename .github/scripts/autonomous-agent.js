@@ -45,9 +45,21 @@ function exec(command, options = {}) {
 async function getNextRoadmapIssue(priorityFilter) {
   console.log(`\n🔍 Finding next roadmap issue (priority: ${priorityFilter})...`);
 
+  // Map short priority codes to full label names
+  const priorityMap = {
+    'HP': 'high',
+    'MP': 'medium',
+    'LP': 'low',
+    'high': 'high',
+    'medium': 'medium',
+    'low': 'low'
+  };
+  
+  const priorityLabel = priorityMap[priorityFilter] || priorityFilter.toLowerCase();
+
   const issues = JSON.parse(
     exec(
-      `gh issue list --label roadmap --label priority-${priorityFilter.toLowerCase()} --json number,title,labels,assignees,body --limit 10`,
+      `gh issue list --label roadmap --label priority-${priorityLabel} --json number,title,labels,assignees,body --limit 10`,
       { silent: true }
     )
   );
