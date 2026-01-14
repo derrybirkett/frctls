@@ -1,0 +1,9 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+commitRegex='^(feat|fix|docs|style|refactor|perf|test|chore)(\(\w+\))?:\s.{1,50}$'
+
+if ! echo "$1" | grep -Eq "$commitRegex"; then
+  echo "Commit message does not follow the format '<type>(<scope>): <subject>'"
+  exit 1
+fi
