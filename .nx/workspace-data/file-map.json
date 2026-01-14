@@ -1,0 +1,403 @@
+{
+  "version": "6.0",
+  "nxVersion": "22.2.0",
+  "pathMappings": {},
+  "nxJsonPlugins": [],
+  "fileMap": {
+    "projectFileMap": {
+      "infra": [
+        {
+          "file": "tools/infra/project.json",
+          "hash": "1126399193529670757"
+        }
+      ]
+    },
+    "nonProjectFiles": [
+      {
+        "file": ".cursorrules",
+        "hash": "11516804630296476110"
+      },
+      {
+        "file": ".env.example",
+        "hash": "15225790543569345768"
+      },
+      {
+        "file": ".gemini/settings.json",
+        "hash": "5921792102792576356"
+      },
+      {
+        "file": ".github/ISSUE_TEMPLATE/bug-report.yml",
+        "hash": "16665359084189820412"
+      },
+      {
+        "file": ".github/ISSUE_TEMPLATE/config.yml",
+        "hash": "9524471699474721254"
+      },
+      {
+        "file": ".github/ISSUE_TEMPLATE/feature-request.yml",
+        "hash": "3020907467975948788"
+      },
+      {
+        "file": ".github/ISSUE_TEMPLATE/roadmap-task.yml",
+        "hash": "16711750677506724026"
+      },
+      {
+        "file": ".github/scripts/autonomous-agent.js",
+        "hash": "6906909808845642222"
+      },
+      {
+        "file": ".github/scripts/ciso-review-agent.js",
+        "hash": "3758899825899628183"
+      },
+      {
+        "file": ".github/scripts/create-roadmap-issues.js",
+        "hash": "3250543588918853552"
+      },
+      {
+        "file": ".github/scripts/cto-review-agent.js",
+        "hash": "9317175105219353596"
+      },
+      {
+        "file": ".github/scripts/generate-content.js",
+        "hash": "12364942763467351740"
+      },
+      {
+        "file": ".github/scripts/install-git-hooks.sh",
+        "hash": "12052169678818483408"
+      },
+      {
+        "file": ".github/scripts/package.json",
+        "hash": "1729486177225407756"
+      },
+      {
+        "file": ".github/scripts/pnpm-lock.yaml",
+        "hash": "3762538227880345389"
+      },
+      {
+        "file": ".github/scripts/pre-commit-hook.sh",
+        "hash": "3117029064310426617"
+      },
+      {
+        "file": ".github/workflows/ai-content-generation.yml",
+        "hash": "5475679000660747879"
+      },
+      {
+        "file": ".github/workflows/autonomous-roadmap-agent.yml",
+        "hash": "14684253557568008562"
+      },
+      {
+        "file": ".github/workflows/content-automation.yml",
+        "hash": "12201199699002998639"
+      },
+      {
+        "file": ".github/workflows/deploy-blog.yml",
+        "hash": "2645481788199420761"
+      },
+      {
+        "file": ".github/workflows/pr-review-agents.yml",
+        "hash": "8939502574175155592"
+      },
+      {
+        "file": ".gitignore",
+        "hash": "6051751248226314571"
+      },
+      {
+        "file": ".gitmodules",
+        "hash": "1785419845417123864"
+      },
+      {
+        "file": ".kiro/steering/product.md",
+        "hash": "13245526712136909437"
+      },
+      {
+        "file": ".kiro/steering/structure.md",
+        "hash": "7488984472163336183"
+      },
+      {
+        "file": ".kiro/steering/tech.md",
+        "hash": "12037263505832282189"
+      },
+      {
+        "file": ".nx/nxw.js",
+        "hash": "11301648124127104610"
+      },
+      {
+        "file": ".nxignore",
+        "hash": "1542229851220711889"
+      },
+      {
+        "file": "AGENTS.md",
+        "hash": "2859781172371704802"
+      },
+      {
+        "file": "Dockerfile.dev",
+        "hash": "8988115680094816699"
+      },
+      {
+        "file": "README-DEPLOYMENT.md",
+        "hash": "14601009632002253644"
+      },
+      {
+        "file": "README.md",
+        "hash": "8673817479713790623"
+      },
+      {
+        "file": "apps/blog/.gitignore",
+        "hash": "9299208901158055425"
+      },
+      {
+        "file": "apps/blog/CONTENT_TEMPLATE.md",
+        "hash": "16081343049465354613"
+      },
+      {
+        "file": "apps/blog/README.md",
+        "hash": "4170264538468546503"
+      },
+      {
+        "file": "apps/blog/astro.config.mjs",
+        "hash": "16863305061726274616"
+      },
+      {
+        "file": "apps/blog/e2e/about.spec.ts",
+        "hash": "12374156705390297324"
+      },
+      {
+        "file": "apps/blog/e2e/blog.spec.ts",
+        "hash": "11772943392516818413"
+      },
+      {
+        "file": "apps/blog/e2e/homepage.spec.ts",
+        "hash": "3360227755228429121"
+      },
+      {
+        "file": "apps/blog/package.json",
+        "hash": "7109344867007078855"
+      },
+      {
+        "file": "apps/blog/playwright.config.ts",
+        "hash": "15617950462401417264"
+      },
+      {
+        "file": "apps/blog/pnpm-lock.yaml",
+        "hash": "14018203310410282395"
+      },
+      {
+        "file": "apps/blog/public/favicon.svg",
+        "hash": "9875909904608765743"
+      },
+      {
+        "file": "apps/blog/public/fonts/atkinson-bold.woff",
+        "hash": "13530054717231114867"
+      },
+      {
+        "file": "apps/blog/public/fonts/atkinson-regular.woff",
+        "hash": "665555906637016849"
+      },
+      {
+        "file": "apps/blog/src/assets/blog-placeholder-1.jpg",
+        "hash": "14870595484608090481"
+      },
+      {
+        "file": "apps/blog/src/assets/blog-placeholder-2.jpg",
+        "hash": "17355853872484342069"
+      },
+      {
+        "file": "apps/blog/src/assets/blog-placeholder-3.jpg",
+        "hash": "16843772921992678946"
+      },
+      {
+        "file": "apps/blog/src/assets/blog-placeholder-4.jpg",
+        "hash": "2278600479994227744"
+      },
+      {
+        "file": "apps/blog/src/assets/blog-placeholder-5.jpg",
+        "hash": "15158153735084498305"
+      },
+      {
+        "file": "apps/blog/src/assets/blog-placeholder-about.jpg",
+        "hash": "11726688546249052525"
+      },
+      {
+        "file": "apps/blog/src/components/BaseHead.astro",
+        "hash": "7011963644565871883"
+      },
+      {
+        "file": "apps/blog/src/components/Footer.astro",
+        "hash": "18197284309575696774"
+      },
+      {
+        "file": "apps/blog/src/components/FormattedDate.astro",
+        "hash": "15197034521235509090"
+      },
+      {
+        "file": "apps/blog/src/components/Header.astro",
+        "hash": "13109940889113377229"
+      },
+      {
+        "file": "apps/blog/src/components/HeaderLink.astro",
+        "hash": "1011340957614621557"
+      },
+      {
+        "file": "apps/blog/src/consts.test.ts",
+        "hash": "8757140374965667016"
+      },
+      {
+        "file": "apps/blog/src/consts.ts",
+        "hash": "12663677155113929834"
+      },
+      {
+        "file": "apps/blog/src/content.config.ts",
+        "hash": "7707756913834123189"
+      },
+      {
+        "file": "apps/blog/src/content/blog/hidden-cost-cultural-tokens.md",
+        "hash": "18349645481285865343"
+      },
+      {
+        "file": "apps/blog/src/content/blog/introducing-fractals-of-change.md",
+        "hash": "5674949368370070182"
+      },
+      {
+        "file": "apps/blog/src/content/blog/optimizing-cross-functional-teams-a-fractal-approach-to-enterprise-transformation.md",
+        "hash": "13035865727190325806"
+      },
+      {
+        "file": "apps/blog/src/content/blog/strategic-change-vs-tactical-fixes-optimizing-transformation-for-enterprise-directors.md",
+        "hash": "1771504184853166091"
+      },
+      {
+        "file": "apps/blog/src/content/blog/the-power-of-incremental-change-maximizing-roi-in-enterprise-organizations.md",
+        "hash": "667987425204670837"
+      },
+      {
+        "file": "apps/blog/src/content/blog/understanding-fractal-patterns.md",
+        "hash": "16539267060074560418"
+      },
+      {
+        "file": "apps/blog/src/content/blog/unlocking-sustainable-change-a-fractal-toolkit-for-enterprise-directors.md",
+        "hash": "16307349248101414022"
+      },
+      {
+        "file": "apps/blog/src/content/blog/using-mdx.mdx",
+        "hash": "17760330842691085411"
+      },
+      {
+        "file": "apps/blog/src/content/drafts/.gitkeep",
+        "hash": "2192883096698474512"
+      },
+      {
+        "file": "apps/blog/src/content/drafts/navigating-remote-work-and-cultural-token-evolution-a-guide-for-enterprise-directors.md",
+        "hash": "12450185685044853394"
+      },
+      {
+        "file": "apps/blog/src/layouts/BlogPost.astro",
+        "hash": "9041804596369589721"
+      },
+      {
+        "file": "apps/blog/src/pages/about.astro",
+        "hash": "13695589860776042304"
+      },
+      {
+        "file": "apps/blog/src/pages/blog/[...slug].astro",
+        "hash": "2775661981357875535"
+      },
+      {
+        "file": "apps/blog/src/pages/blog/index.astro",
+        "hash": "2190576695731329010"
+      },
+      {
+        "file": "apps/blog/src/pages/index.astro",
+        "hash": "11425734060257949304"
+      },
+      {
+        "file": "apps/blog/src/pages/rss.xml.js",
+        "hash": "6313240081924284018"
+      },
+      {
+        "file": "apps/blog/src/styles/global.css",
+        "hash": "6161052641358193007"
+      },
+      {
+        "file": "apps/blog/tsconfig.json",
+        "hash": "14053933627381680131"
+      },
+      {
+        "file": "apps/blog/vitest.config.ts",
+        "hash": "12425498829889797157"
+      },
+      {
+        "file": "docker-compose.yml",
+        "hash": "13140080552027526369"
+      },
+      {
+        "file": "docs/README.md",
+        "hash": "1428465885751287926"
+      },
+      {
+        "file": "docs/activity-log.md",
+        "hash": "7431498275285245948"
+      },
+      {
+        "file": "docs/ai-content-setup.md",
+        "hash": "11315985848644183934"
+      },
+      {
+        "file": "docs/autonomous-agent-automation-plan.md",
+        "hash": "3258116754283571736"
+      },
+      {
+        "file": "docs/changelog.md",
+        "hash": "11135926326193593166"
+      },
+      {
+        "file": "docs/code-review-recommendations.md",
+        "hash": "10340834759858505211"
+      },
+      {
+        "file": "docs/content-research-roadmap.md",
+        "hash": "11264672323250532508"
+      },
+      {
+        "file": "docs/cpo-agent-suggestion-triage.md",
+        "hash": "1086389151002950233"
+      },
+      {
+        "file": "docs/cpo-issue-management.md",
+        "hash": "6720111031208937623"
+      },
+      {
+        "file": "docs/deployment.md",
+        "hash": "7952584066545989235"
+      },
+      {
+        "file": "docs/git-hooks-setup.md",
+        "hash": "5781773550053477001"
+      },
+      {
+        "file": "docs/mission.md",
+        "hash": "3791543963956427140"
+      },
+      {
+        "file": "nx",
+        "hash": "8108031838021157773"
+      },
+      {
+        "file": "nx.bat",
+        "hash": "16119536321561623970"
+      },
+      {
+        "file": "nx.json",
+        "hash": "3563333400223233801"
+      },
+      {
+        "file": "package.json",
+        "hash": "9566514624436481868"
+      },
+      {
+        "file": "pnpm-lock.yaml",
+        "hash": "3693682537653401461"
+      }
+    ]
+  },
+  "externalNodesHash": "1144556449417907092"
+}

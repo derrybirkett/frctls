@@ -15,9 +15,9 @@ services:
     image: postgres:16
     container_name: nexus-db
     environment:
-      POSTGRES_DB: nexus
-      POSTGRES_USER: nexus
-      POSTGRES_PASSWORD: nexus
+      POSTGRES_DB: ${POSTGRES_DB:-nexus}
+      POSTGRES_USER: ${POSTGRES_USER:-nexus}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nexus}
     ports:
       - "5432:5432"
     volumes:
@@ -31,9 +31,9 @@ services:
     environment:
       DB_TYPE: postgresdb
       DB_POSTGRESDB_HOST: db
-      DB_POSTGRESDB_DATABASE: nexus
-      DB_POSTGRESDB_USER: nexus
-      DB_POSTGRESDB_PASSWORD: nexus
+      DB_POSTGRESDB_DATABASE: ${POSTGRES_DB:-nexus}
+      DB_POSTGRESDB_USER: ${POSTGRES_USER:-nexus}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD:-nexus}
       N8N_BASIC_AUTH_ACTIVE: "false"
     ports:
       - "5678:5678"
