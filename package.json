@@ -1,7 +1,7 @@
 {
   "name": "fractals",
   "version": "1.0.0",
-  "description": "A project for generating and exploring fractals",
+  "description": "Transforming organizations through small, strategic changes",
   "main": "index.js",
   "scripts": {
     "build": "nx run-many -t build",
@@ -13,14 +13,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/fractals.git"
+    "url": "https://github.com/fractalsofchange/frctls"
   },
-  "keywords": [
-    "fractals",
-    "nx",
-    "visualization"
-  ],
-  "author": "Your Name <your.email@example.com>",
   "license": "MIT",
   "packageManager": "pnpm@10.15.1",
   "devDependencies": {
