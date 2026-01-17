@@ -5,9 +5,9 @@ on:
     types: [opened, synchronize, reopened]
 
 permissions:
-  contents: write
-  pull-requests: write
-  issues: write
+  contents: read  # Read PR content
+  pull-requests: write  # Post review comments
+  issues: write  # Create security issues if needed
 
 jobs:
   cto-review:
