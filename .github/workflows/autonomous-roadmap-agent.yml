@@ -16,9 +16,9 @@ on:
         default: 'HP'
 
 permissions:
-  contents: write
-  pull-requests: write
-  issues: write
+  contents: write  # Required: Create branches and commit code
+  pull-requests: write  # Required: Create PRs for implementations
+  issues: write  # Required: Update issue status
 
 jobs:
   implement-roadmap-task:

@@ -60,13 +60,11 @@ jobs:
       - name: Check for high/critical vulnerabilities
         run: |
           echo "🚨 Checking for high/critical vulnerabilities..."
-          # Run audit and check exit code (0 = no vulnerabilities)
-          if pnpm audit --audit-level=high > /dev/null 2>&1; then
-            echo "✅ No high/critical vulnerabilities found"
+          if pnpm audit --audit-level=high 2>&1 | grep -q "vulnerabilities"; then
+            echo "❌ High or critical vulnerabilities found!"
+            exit 1
           else
-            echo "⚠️ Vulnerabilities found, but allowing merge (to be fixed in follow-up)"
-            echo "Run 'pnpm audit' locally to see details"
-            # Don't fail the build for now - just warn
+            echo "✅ No high/critical vulnerabilities found"
           fi
 
   workflow-security:
@@ -80,8 +78,8 @@ jobs:
         run: |
           echo "🔍 Auditing GitHub Actions workflow permissions..."
           
-          # Check for overly permissive workflows (exclude this security scan file)
-          if grep -r "permissions:.*write-all" .github/workflows/ --exclude="security-scan.yml"; then
+          # Check for overly permissive workflows
+          if grep -r "permissions:.*write-all" .github/workflows/; then
             echo "❌ Found workflow with write-all permissions!"
             exit 1
           fi
