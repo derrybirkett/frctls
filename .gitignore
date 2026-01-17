@@ -1,2 +1,7 @@
+
+.nx/installation
+.nx/cache
+.nx/workspace-data
+node_modules
+.pnpm-store
 .env
-# Add other files and directories to ignore
