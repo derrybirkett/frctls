@@ -3,5 +3,57 @@
     "version": "22.2.0"
   },
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "nxCloudId": "69399b92ef3b5c75bf4c2b88"
+  "nxCloudId": "69399b92ef3b5c75bf4c2b88",
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "@nrwl/nx-cloud",
+      "options": {
+        "cacheableOperations": ["build", "test", "lint"]
+      }
+    }
+  },
+  "targetDefaults": {
+    "build": {
+      "inputs": [
+        "^build",
+        "!{projectRoot}/tmp/**/*"
+      ],
+      "outputs": [
+        "{projectRoot}/dist/**/*"
+      ],
+      "dependsOn": [
+        "{dependencies}",
+        "{target}",
+        "{configuration}"
+      ]
+    },
+    "test": {
+      "inputs": [
+        "^test",
+        "!{projectRoot}/tmp/**/*"
+      ],
+      "outputs": [
+        "{projectRoot}/coverage/**/*"
+      ],
+      "dependsOn": [
+        "{dependencies}",
+        "{target}",
+        "{configuration}"
+      ]
+    },
+    "lint": {
+      "inputs": [
+        "^lint",
+        "!{projectRoot}/tmp/**/*"
+      ],
+      "outputs": [
+        "!{projectRoot}/lint-results/**/*"
+      ],
+      "dependsOn": [
+        "{dependencies}",
+        "{target}",
+        "{configuration}"
+      ]
+    }
+  }
 }
