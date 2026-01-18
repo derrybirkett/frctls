@@ -49,40 +49,81 @@ jobs:
         id: check-content
         run: |
           echo "Checking for content scheduled for publication..."
-          
-          # Check if there are any draft posts with future publish dates that are now ready
+
+          # Get current date in YYYY-MM-DD format
           CURRENT_DATE=$(date -u +"%Y-%m-%d")
+          CURRENT_TIMESTAMP=$(date -u +"%s")
           echo "Current date: $CURRENT_DATE"
-          
-          # Look for draft posts in a drafts directory (we'll create this structure)
+
+          # Look for draft posts that should be published (pubDate <= today)
           if [ -d "apps/blog/src/content/drafts" ]; then
-            READY_POSTS=$(find apps/blog/src/content/drafts -name "*.md" -exec grep -l "pubDate.*$CURRENT_DATE\|pubDate.*$(date -u -d '-1 day' +"%Y-%m-%d")" {} \; || true)
+            READY_POSTS=""
+
+            # Find all markdown files (excluding .gitkeep)
+            for post in apps/blog/src/content/drafts/*.md; do
+              # Skip if no .md files exist
+              [ -e "$post" ] || continue
+
+              # Extract pubDate from frontmatter
+              PUB_DATE=$(grep -m 1 "^pubDate:" "$post" | sed -E "s/^pubDate:[[:space:]]*['\"]?([0-9]{4}-[0-9]{2}-[0-9]{2})['\"]?.*/\1/")
+
+              if [ -n "$PUB_DATE" ]; then
+                echo "Checking $post with pubDate: $PUB_DATE"
+
+                # Convert dates to timestamps for comparison
+                PUB_TIMESTAMP=$(date -u -d "$PUB_DATE" +"%s" 2>/dev/null || echo "0")
+
+                # If pubDate <= current date, add to list
+                if [ "$PUB_TIMESTAMP" -le "$CURRENT_TIMESTAMP" ] && [ "$PUB_TIMESTAMP" -gt "0" ]; then
+                  echo "  → Ready for publication!"
+                  READY_POSTS="$READY_POSTS $post"
+                else
+                  echo "  → Not yet ready (scheduled for future)"
+                fi
+              else
+                echo "Warning: Could not extract pubDate from $post"
+              fi
+            done
+
+            # Set output based on whether we found posts
             if [ -n "$READY_POSTS" ]; then
               echo "ready_posts=true" >> $GITHUB_OUTPUT
-              echo "posts_to_publish=$READY_POSTS" >> $GITHUB_OUTPUT
+              # Store as newline-separated list
+              echo "posts_to_publish<<EOF" >> $GITHUB_OUTPUT
+              echo "$READY_POSTS" >> $GITHUB_OUTPUT
+              echo "EOF" >> $GITHUB_OUTPUT
+              echo "Found $(echo $READY_POSTS | wc -w) post(s) ready for publication"
             else
               echo "ready_posts=false" >> $GITHUB_OUTPUT
+              echo "No posts ready for publication"
             fi
           else
             echo "ready_posts=false" >> $GITHUB_OUTPUT
+            echo "Drafts directory not found"
           fi
 
       - name: Move scheduled posts to published
         if: steps.check-content.outputs.ready_posts == 'true'
         run: |
           echo "Moving scheduled posts to published directory..."
-          
+
           # Create published directory if it doesn't exist
           mkdir -p apps/blog/src/content/blog
-          
+
           # Move ready posts from drafts to blog
+          POSTS_PUBLISHED=0
           for post in ${{ steps.check-content.outputs.posts_to_publish }}; do
             if [ -f "$post" ]; then
               filename=$(basename "$post")
               mv "$post" "apps/blog/src/content/blog/$filename"
-              echo "Published: $filename"
+              echo "✅ Published: $filename"
+              POSTS_PUBLISHED=$((POSTS_PUBLISHED + 1))
+            else
+              echo "⚠️  Warning: File not found: $post"
             fi
           done
+
+          echo "📊 Total posts published: $POSTS_PUBLISHED"
 
       - name: Create Pull Request for published content
         if: steps.check-content.outputs.ready_posts == 'true'
