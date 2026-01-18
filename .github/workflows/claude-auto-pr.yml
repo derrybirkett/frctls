@@ -1,0 +1,168 @@
+name: Claude Auto PR
+
+on:
+  push:
+    branches:
+      - 'claude/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  create-pr:
+    name: Auto-create PR for Claude branches
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate branch name
+        id: validate
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+          echo "Branch name: $BRANCH_NAME"
+
+          # Check if branch follows claude/task-name-SESSION_ID pattern
+          if [[ ! "$BRANCH_NAME" =~ ^claude/.+-[A-Za-z0-9]{5}$ ]]; then
+            echo "⚠️  Warning: Branch name doesn't follow expected pattern 'claude/task-name-SESSION_ID'"
+            echo "valid=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "✅ Branch name is valid"
+          echo "valid=true" >> $GITHUB_OUTPUT
+
+      - name: Check if PR exists
+        id: check-pr
+        if: steps.validate.outputs.valid == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+
+          # Check if PR already exists for this branch
+          PR_COUNT=$(gh pr list --head "$BRANCH_NAME" --json number --jq 'length')
+
+          if [ "$PR_COUNT" -gt 0 ]; then
+            echo "✅ PR already exists for branch $BRANCH_NAME"
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "📝 No PR found for branch $BRANCH_NAME"
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Extract task info from commits
+        id: task-info
+        if: steps.validate.outputs.valid == 'true' && steps.check-pr.outputs.exists == 'false'
+        run: |
+          # Get the latest commit message
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          COMMIT_TITLE=$(git log -1 --pretty=%s)
+
+          # Extract branch name without claude/ prefix
+          BRANCH_NAME="${{ github.ref_name }}"
+          TASK_NAME=$(echo "$BRANCH_NAME" | sed 's/^claude\///' | sed 's/-[A-Za-z0-9]\{5\}$//')
+
+          # Create a human-readable title from the task name
+          PR_TITLE=$(echo "$TASK_NAME" | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++){$i=toupper(substr($i,1,1)) substr($i,2)}}1')
+
+          # If commit title looks like a conventional commit, use it
+          if [[ "$COMMIT_TITLE" =~ ^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert): ]]; then
+            PR_TITLE="$COMMIT_TITLE"
+          fi
+
+          # Store outputs (escape newlines for multiline)
+          {
+            echo "title<<EOF"
+            echo "$PR_TITLE"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+          {
+            echo "commit_msg<<EOF"
+            echo "$COMMIT_MSG"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+          echo "task_name=$TASK_NAME" >> $GITHUB_OUTPUT
+
+      - name: Get commit stats
+        id: stats
+        if: steps.validate.outputs.valid == 'true' && steps.check-pr.outputs.exists == 'false'
+        run: |
+          # Get diff stats for the branch
+          BASE_BRANCH="${{ github.event.repository.default_branch }}"
+
+          # Count files changed
+          FILES_CHANGED=$(git diff --name-only "origin/$BASE_BRANCH"...HEAD 2>/dev/null | wc -l || echo "0")
+
+          # Get insertions and deletions
+          STATS=$(git diff --shortstat "origin/$BASE_BRANCH"...HEAD 2>/dev/null || echo "0 files changed, 0 insertions(+), 0 deletions(-)")
+
+          echo "files_changed=$FILES_CHANGED" >> $GITHUB_OUTPUT
+          echo "stats=$STATS" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        if: steps.validate.outputs.valid == 'true' && steps.check-pr.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+          BASE_BRANCH="${{ github.event.repository.default_branch }}"
+
+          # Build PR body
+          cat > pr_body.md << 'EOF'
+## 🤖 Auto-generated PR for Claude Branch
+
+**Branch**: `${{ github.ref_name }}`
+**Task**: ${{ steps.task-info.outputs.task_name }}
+
+### Changes Summary
+
+${{ steps.task-info.outputs.commit_msg }}
+
+### Commit Statistics
+
+- **Files changed**: ${{ steps.stats.outputs.files_changed }}
+- **Diff stats**: ${{ steps.stats.outputs.stats }}
+
+### Review Process
+
+This PR will be automatically reviewed by:
+- ✅ **CTO Agent** - Technical architecture and code quality review
+- ✅ **CISO Agent** - Security and compliance review
+
+The PR will be **auto-merged** if:
+1. All review agents approve
+2. No blocking issues are found
+3. All CI checks pass
+
+---
+
+*This PR was automatically created by the Claude Auto PR workflow*
+EOF
+
+          # Create the PR
+          gh pr create \
+            --title "${{ steps.task-info.outputs.title }}" \
+            --body-file pr_body.md \
+            --base "$BASE_BRANCH" \
+            --head "$BRANCH_NAME" \
+            --label "claude-generated,automated"
+
+          echo "✅ Pull request created successfully!"
+
+      - name: Summary
+        if: steps.validate.outputs.valid == 'true'
+        run: |
+          if [ "${{ steps.check-pr.outputs.exists }}" = "true" ]; then
+            echo "✅ PR already exists - no action needed"
+          else
+            echo "✅ New PR created and review agents will run automatically"
+            echo "📝 Title: ${{ steps.task-info.outputs.title }}"
+            echo "🔍 Review agents: CTO + CISO"
+            echo "🚀 Auto-merge: Enabled (if reviews pass)"
+          fi

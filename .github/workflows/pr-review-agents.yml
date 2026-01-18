@@ -97,11 +97,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          # Check if PR is from automated branch
-          if [[ "${{ github.event.pull_request.head.ref }}" == automated/* ]]; then
-            echo "🤖 Auto-merging automated PR #${PR_NUMBER}..."
+          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+
+          # Check if PR is from automated or claude branch
+          if [[ "$BRANCH_NAME" == automated/* ]] || [[ "$BRANCH_NAME" == claude/* ]]; then
+            echo "🤖 Auto-merging PR #${PR_NUMBER} from branch: $BRANCH_NAME..."
             gh pr merge ${PR_NUMBER} --auto --squash --repo ${{ github.repository }}
             echo "✅ Auto-merge enabled for PR #${PR_NUMBER}"
           else
-            echo "⏭️ Skipping auto-merge: Not an automated PR"
+            echo "⏭️ Skipping auto-merge: Not an automated or Claude branch"
+            echo "Branch: $BRANCH_NAME"
           fi
