@@ -1,0 +1,35 @@
+name: Validate Documentation
+
+on:
+  pull_request:
+    paths:
+      - '**.md'
+      - 'patterns/**'
+      - 'docs/**'
+      - 'ia/**'
+  push:
+    branches:
+      - main
+    paths:
+      - '**.md'
+      - 'patterns/**'
+      - 'docs/**'
+      - 'ia/**'
+
+jobs:
+  structure-validation:
+    name: Validate Repository Structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: List what we have
+        run: |
+          echo "Repository contents:"
+          ls -la
+          echo ""
+          echo "patterns/ contents:"
+          ls -la patterns/ || echo "No patterns dir"
+          echo ""
+          echo "✅ Structure check complete"

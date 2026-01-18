@@ -1,0 +1,518 @@
+#!/usr/bin/env bash
+
+# pip - Unified CLI for .pip framework
+# Provides simple commands for common operations
+#
+# Usage: pip <command> [options]
+
+set -e
+
+VERSION="1.0.0"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+KERNEL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+if [ "$(basename "$KERNEL_ROOT")" = ".pip" ]; then
+    ORGANISM_ROOT="$(cd "$KERNEL_ROOT/.." && pwd)"
+else
+    ORGANISM_ROOT="$KERNEL_ROOT"
+fi
+
+PIPRC_PATH=""
+PIPRC_VERSION=""
+
+find_piprc() {
+    if [ -f "$ORGANISM_ROOT/.piprc" ]; then
+        echo "$ORGANISM_ROOT/.piprc"
+        return 0
+    fi
+    return 1
+}
+
+trim() {
+    local s="$1"
+    s="${s#"${s%%[![:space:]]*}"}"
+    s="${s%"${s##*[![:space:]]}"}"
+    printf "%s" "$s"
+}
+
+strip_quotes() {
+    local s="$1"
+    if [ ${#s} -ge 2 ] && [ "${s:0:1}" = '"' ] && [ "${s: -1}" = '"' ]; then
+        s="${s:1:${#s}-2}"
+    elif [ ${#s} -ge 2 ] && [ "${s:0:1}" = "'" ] && [ "${s: -1}" = "'" ]; then
+        s="${s:1:${#s}-2}"
+    fi
+    printf "%s" "$s"
+}
+
+read_piprc_key() {
+    local key="$1"
+    local file="$2"
+
+    [ -f "$file" ] || return 1
+
+    while IFS= read -r line || [ -n "$line" ]; do
+        line="$(trim "$line")"
+        [ -z "$line" ] && continue
+        case "$line" in
+            \#*)
+                continue
+                ;;
+        esac
+        case "$line" in
+            *=*)
+                local k="$(trim "${line%%=*}")"
+                local v="$(trim "${line#*=}")"
+                v="$(strip_quotes "$v")"
+                if [ "$k" = "$key" ]; then
+                    printf "%s" "$v"
+                    return 0
+                fi
+                ;;
+        esac
+    done < "$file"
+    return 1
+}
+
+load_piprc() {
+    local piprc=""
+    if piprc="$(find_piprc 2>/dev/null)"; then
+        PIPRC_PATH="$piprc"
+        PIPRC_VERSION="$(read_piprc_key "PIPRC_VERSION" "$piprc" 2>/dev/null || true)"
+    fi
+}
+
+load_piprc
+
+# Action mode (execution strategy)
+# - live: run commands normally
+# - confirm: prompt before side-effecting commands
+# - dry-run: avoid side effects; currently only `wrap` is supported
+PIP_ACTION_MODE_SOURCE="default"
+PIP_ACTION_MODE_RAW=""
+if [ -n "${PIP_ACTION_MODE:-}" ]; then
+    PIP_ACTION_MODE_RAW="$PIP_ACTION_MODE"
+    PIP_ACTION_MODE_SOURCE="env"
+elif [ -n "$PIPRC_PATH" ]; then
+    PIP_ACTION_MODE_RAW="$(read_piprc_key "PIP_ACTION_MODE" "$PIPRC_PATH" 2>/dev/null || true)"
+    if [ -n "$PIP_ACTION_MODE_RAW" ]; then
+        PIP_ACTION_MODE_SOURCE="piprc"
+    fi
+fi
+PIP_ACTION_MODE_RAW="${PIP_ACTION_MODE_RAW:-live}"
+PIP_ACTION_MODE="$(echo "$PIP_ACTION_MODE_RAW" | tr '[:upper:]' '[:lower:]')"
+
+case "$PIP_ACTION_MODE" in
+    live|confirm|dry-run)
+        ;;
+    *)
+        echo -e "${RED}Error: Invalid PIP_ACTION_MODE '$PIP_ACTION_MODE_RAW'${NC}"
+        echo -e "Allowed: live | confirm | dry-run"
+        exit 2
+        ;;
+esac
+
+# Execution mode (agent guardrails)
+# - observe: read-only, no side effects
+# - propose: read-only, requires explicit approval before execution
+# - execute: allow commands that write files or create branches
+PIP_MODE_SOURCE="default"
+PIP_MODE_RAW=""
+if [ -n "${PIP_MODE:-}" ]; then
+    PIP_MODE_RAW="$PIP_MODE"
+    PIP_MODE_SOURCE="env"
+elif [ -n "$PIPRC_PATH" ]; then
+    PIP_MODE_RAW="$(read_piprc_key "PIP_MODE" "$PIPRC_PATH" 2>/dev/null || true)"
+    if [ -z "$PIP_MODE_RAW" ]; then
+        # Legacy key supported for migration.
+        PIP_MODE_RAW="$(read_piprc_key "PIP_MODE_DEFAULT" "$PIPRC_PATH" 2>/dev/null || true)"
+    fi
+    if [ -n "$PIP_MODE_RAW" ]; then
+        PIP_MODE_SOURCE="piprc"
+    fi
+fi
+PIP_MODE_RAW="${PIP_MODE_RAW:-execute}"
+PIP_MODE="$(echo "$PIP_MODE_RAW" | tr '[:upper:]' '[:lower:]')"
+
+case "$PIP_MODE" in
+    observe|propose|execute)
+        ;;
+    *)
+        echo -e "${RED}Error: Invalid PIP_MODE '$PIP_MODE_RAW'${NC}"
+        echo -e "Allowed: observe | propose | execute"
+        exit 2
+        ;;
+esac
+
+show_help() {
+    echo -e ""
+    echo -e "${BLUE}pip${NC} - Project Intelligence & Process CLI"
+    echo -e "Version $VERSION"
+    echo -e ""
+    echo -e "${GREEN}USAGE:${NC}"
+    echo -e "    pip <command> [options]"
+    echo -e ""
+    echo -e "${GREEN}MODES:${NC}"
+    echo -e "    Set ${YELLOW}PIP_MODE${NC} to control execution: observe | propose | execute"
+    echo -e "    Set ${YELLOW}PIP_ACTION_MODE${NC} to control execution strategy: live | confirm | dry-run"
+    echo -e "    Defaults can be configured via ${YELLOW}.piprc${NC} (see: pip migrate)"
+    echo -e "    Current: ${YELLOW}${PIP_MODE}${NC} (${PIP_MODE_SOURCE}), ${YELLOW}${PIP_ACTION_MODE}${NC} (${PIP_ACTION_MODE_SOURCE})"
+    echo -e ""
+    echo -e "${GREEN}COMMANDS:${NC}"
+    echo -e ""
+    echo -e "  ${YELLOW}Project Management:${NC}"
+    echo -e "    review              Review progress and recommend priorities"
+    echo -e "    validate            Validate patterns are properly structured"
+    echo -e "    wrap                Run wrap-up process (activity log, changelog, blog)"
+    echo -e "    "
+    echo -e "  ${YELLOW}Development:${NC}"
+    echo -e "    bootstrap [dir]     Bootstrap new project (interactive)"
+    echo -e "    apply <fragment>    Apply infrastructure fragment"
+    echo -e "    "
+    echo -e "  ${YELLOW}Patterns:${NC}"
+    echo -e "    patterns            List available agentic design patterns"
+    echo -e "    pattern <name>      Show specific pattern details"
+    echo -e "    "
+    echo -e "  ${YELLOW}Information:${NC}"
+    echo -e "    mode                Show current execution mode and config source"
+    echo -e "    migrate             Create/upgrade .piprc in the project root"
+    echo -e "    version             Show version information"
+    echo -e "    help                Show this help message"
+    echo -e ""
+    echo -e "${GREEN}EXAMPLES:${NC}"
+    echo -e "    pip review                    # Review progress and get recommendations"
+    echo -e "    pip review --days 14          # Review last 14 days"
+    echo -e "    pip validate                  # Validate pattern structure"
+    echo -e "    pip bootstrap my-project      # Create new project"
+    echo -e "    pip apply nx-dev-infra        # Apply Nx infrastructure fragment"
+    echo -e "    pip patterns                  # List all patterns"
+    echo -e "    pip pattern react             # Show ReAct pattern details"
+    echo -e ""
+    echo -e "${GREEN}COMMON WORKFLOWS:${NC}"
+    echo -e "    "
+    echo -e "    ${YELLOW}Weekly Review:${NC}"
+    echo -e "        pip review"
+    echo -e "        # Review recommendations, approve to create branch"
+    echo -e "        # Work on approved priority"
+    echo -e "        pip wrap"
+    echo -e "        "
+    echo -e "    ${YELLOW}Starting New Project:${NC}"
+    echo -e "        pip bootstrap my-project"
+    echo -e "        cd my-project"
+    echo -e "        pip apply nx-dev-infra"
+    echo -e "        "
+    echo -e "    ${YELLOW}Learning Patterns:${NC}"
+    echo -e "        pip patterns            # See all patterns"
+    echo -e "        pip pattern react       # Deep dive on ReAct"
+    echo -e "        pip pattern planning    # Deep dive on Planning"
+    echo -e ""
+    echo -e "${GREEN}DOCS:${NC}"
+    echo -e "    Full documentation: README.md, WARP.md"
+    echo -e "    Pattern library: resources/agentic-design-patterns/extracted-patterns/"
+}
+
+require_execute() {
+    local command_name="$1"
+
+    if [ "$PIP_MODE" != "execute" ]; then
+        echo -e "${YELLOW}Blocked:${NC} '${command_name}' requires execution approval."
+        echo -e "Set ${YELLOW}PIP_MODE=execute${NC} and re-run to proceed."
+        echo -e "Current: ${YELLOW}PIP_MODE=${PIP_MODE}${NC}"
+        exit 3
+    fi
+
+    if [ "$PIP_ACTION_MODE" = "dry-run" ]; then
+        if [ "$command_name" != "wrap" ]; then
+            echo -e "${YELLOW}Blocked:${NC} '${command_name}' is disabled in dry-run mode."
+            echo -e "Set ${YELLOW}PIP_ACTION_MODE=live${NC} (or unset it) to proceed."
+            echo -e "Current: ${YELLOW}PIP_ACTION_MODE=${PIP_ACTION_MODE}${NC}"
+            exit 3
+        fi
+    fi
+
+    if [ "$PIP_ACTION_MODE" = "confirm" ]; then
+        local confirm=""
+        read -rp "Proceed with '${command_name}'? [y/N] " confirm
+        if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+            echo "Cancelled."
+            exit 0
+        fi
+    fi
+}
+
+show_mode() {
+    echo -e ""
+    echo -e "${BLUE}Execution Mode${NC}"
+    echo -e ""
+    echo -e "Mode:        ${YELLOW}${PIP_MODE}${NC}"
+    echo -e "Mode source: ${YELLOW}${PIP_MODE_SOURCE}${NC}"
+    echo -e "Action:      ${YELLOW}${PIP_ACTION_MODE}${NC}"
+    echo -e "Action src:  ${YELLOW}${PIP_ACTION_MODE_SOURCE}${NC}"
+    if [ -n "$PIPRC_PATH" ]; then
+        echo -e "Piprc:  ${YELLOW}${PIPRC_PATH}${NC}"
+        if [ -n "$PIPRC_VERSION" ]; then
+            echo -e "Schema: ${YELLOW}${PIPRC_VERSION}${NC}"
+        fi
+    else
+        echo -e "Piprc:  ${YELLOW}(not found)${NC}"
+    fi
+    echo -e ""
+    echo -e "To override for one command: ${YELLOW}PIP_MODE=execute pip <cmd>${NC}"
+    echo -e "To set a default: edit ${YELLOW}.piprc${NC} (or run ${YELLOW}pip migrate${NC})"
+    echo -e ""
+}
+
+migrate_piprc() {
+    local target="$ORGANISM_ROOT/.piprc"
+    local tmp=""
+
+    if [ ! -f "$target" ]; then
+        cat > "$target" <<'EOF'
+# .piprc — organism configuration for the .pip kernel
+#
+# Format: KEY=VALUE (one per line)
+# - Lines starting with '#' are comments
+# - Avoid secrets here; use .envrc for tokens and credentials
+
+PIPRC_VERSION=1
+
+# Execution mode (agent guardrails)
+# observe | propose | execute
+PIP_MODE=propose
+
+# Action mode (execution strategy)
+# live | confirm | dry-run
+PIP_ACTION_MODE=live
+EOF
+        echo -e "${GREEN}Created:${NC} $target"
+        return 0
+    fi
+
+    if ! grep -q '^PIPRC_VERSION=' "$target" 2>/dev/null; then
+        tmp="$(mktemp -t piprc.XXXXXX)"
+        {
+            echo "PIPRC_VERSION=1"
+            echo
+            cat "$target"
+        } > "$tmp"
+        mv "$tmp" "$target"
+        echo -e "${GREEN}Updated:${NC} Added PIPRC_VERSION to $target"
+    fi
+
+    if grep -q '^PIP_MODE_DEFAULT=' "$target" 2>/dev/null && ! grep -q '^PIP_MODE=' "$target" 2>/dev/null; then
+        tmp="$(mktemp -t piprc.XXXXXX)"
+        sed 's/^PIP_MODE_DEFAULT=/PIP_MODE=/' "$target" > "$tmp"
+        mv "$tmp" "$target"
+        echo -e "${GREEN}Updated:${NC} Migrated PIP_MODE_DEFAULT -> PIP_MODE in $target"
+    fi
+}
+
+show_version() {
+    echo "pip version $VERSION"
+    echo ""
+    echo "Project Intelligence & Process Framework"
+    echo "https://github.com/derrybirkett/pip"
+}
+
+list_patterns() {
+    echo -e ""
+    echo -e "${BLUE}Available Agentic Design Patterns:${NC}"
+    echo -e ""
+    
+    local pattern_dir="$SCRIPT_DIR/../resources/agentic-design-patterns/extracted-patterns"
+    
+    if [ ! -d "$pattern_dir" ]; then
+        echo -e "${RED}Error: Pattern directory not found${NC}"
+        exit 1
+    fi
+    
+    echo -e "${GREEN}1. ReAct Pattern${NC} (react)"
+    echo -e "   Reason → Act → Observe → Reflect workflow"
+    echo -e "   File: react-pattern.md"
+    echo -e ""
+    
+    echo -e "${GREEN}2. Planning Pattern${NC} (planning)"
+    echo -e "   Task decomposition and sequencing"
+    echo -e "   File: planning-pattern.md"
+    echo -e ""
+    
+    echo -e "${GREEN}3. Reflection Pattern${NC} (reflection)"
+    echo -e "   Learning from experience and improvement"
+    echo -e "   File: reflection-pattern.md"
+    echo -e ""
+    
+    echo -e "${GREEN}4. Tool Use Pattern${NC} (tool-use)"
+    echo -e "   Extending capabilities with specialized tools"
+    echo -e "   File: tool-use-pattern.md"
+    echo -e ""
+    
+    echo -e "${GREEN}5. Multi-Agent Collaboration${NC} (multi-agent)"
+    echo -e "   Coordinating specialized agents"
+    echo -e "   File: multi-agent-collaboration-pattern.md"
+    echo -e ""
+    
+    echo -e "Use: ${YELLOW}pip pattern <name>${NC} to view details"
+    echo -e ""
+}
+
+show_pattern() {
+    local pattern_name=$1
+    local pattern_dir="$SCRIPT_DIR/../resources/agentic-design-patterns/extracted-patterns"
+    local pattern_file=""
+    
+    case "$pattern_name" in
+        react|ReAct)
+            pattern_file="$pattern_dir/react-pattern.md"
+            ;;
+        planning|Planning)
+            pattern_file="$pattern_dir/planning-pattern.md"
+            ;;
+        reflection|Reflection)
+            pattern_file="$pattern_dir/reflection-pattern.md"
+            ;;
+        tool-use|tool|Tool)
+            pattern_file="$pattern_dir/tool-use-pattern.md"
+            ;;
+        multi-agent|multi|collaboration)
+            pattern_file="$pattern_dir/multi-agent-collaboration-pattern.md"
+            ;;
+        *)
+            echo -e "${RED}Error: Unknown pattern '$pattern_name'${NC}"
+            echo -e ""
+            echo -e "Available patterns: react, planning, reflection, tool-use, multi-agent"
+            echo -e "Use: ${YELLOW}pip patterns${NC} to see all patterns"
+            exit 1
+            ;;
+    esac
+    
+    if [ -f "$pattern_file" ]; then
+        if command -v bat &> /dev/null; then
+            # Use bat if available (better syntax highlighting)
+            bat --style=plain --paging=never "$pattern_file"
+        elif command -v less &> /dev/null; then
+            # Use less as fallback
+            less "$pattern_file"
+        else
+            # Plain cat as last resort
+            cat "$pattern_file"
+        fi
+    else
+        echo -e "${RED}Error: Pattern file not found: $pattern_file${NC}"
+        exit 1
+    fi
+}
+
+# Main command router
+case "${1:-help}" in
+    review)
+        require_execute "review"
+        shift
+        exec "$SCRIPT_DIR/review-and-prioritize.sh" "$@"
+        ;;
+    
+    validate)
+        shift
+        exec "$SCRIPT_DIR/validate-patterns.sh" "$@"
+        ;;
+    
+    wrap|wrap-up)
+        require_execute "wrap"
+        shift
+        if [ -f "$SCRIPT_DIR/wrap-up.sh" ]; then
+            if [ "$PIP_ACTION_MODE" = "dry-run" ]; then
+                export PIP_WRAP_UP_DRY_RUN=1
+                export PIP_WRAP_UP_SKIP_PUSH=1
+            fi
+            exec "$SCRIPT_DIR/wrap-up.sh" "$@"
+        else
+            echo -e "${YELLOW}Note: wrap-up.sh not yet implemented${NC}"
+            echo -e "Manual wrap-up steps:"
+            echo -e "  1. Update docs/activity-log.md"
+            echo -e "  2. Update docs/changelog.md"
+            echo -e "  3. Write blog post (if needed)"
+            echo -e "  4. Commit and create PR"
+        fi
+        ;;
+    
+    bootstrap)
+        require_execute "bootstrap"
+        shift
+        if [ -f "$SCRIPT_DIR/bootstrap-project.sh" ]; then
+            exec "$SCRIPT_DIR/bootstrap-project.sh" "$@"
+        else
+            echo -e "${RED}Error: bootstrap-project.sh not found${NC}"
+            exit 1
+        fi
+        ;;
+    
+    apply)
+        require_execute "apply"
+        fragment=$2
+        shift 2
+        if [ -z "$fragment" ]; then
+            echo -e "${RED}Error: Fragment name required${NC}"
+            echo -e "Usage: pip apply <fragment>"
+            echo -e ""
+            echo -e "Available fragments:"
+            ls -1 "$SCRIPT_DIR/../fragments/" | grep -v "^\\." || echo "  No fragments found"
+            exit 1
+        fi
+        
+        apply_script="$SCRIPT_DIR/apply-${fragment}.sh"
+        if [ -f "$apply_script" ]; then
+            exec "$apply_script" "$@"
+        else
+            echo -e "${RED}Error: Apply script not found: $apply_script${NC}"
+            echo -e ""
+            echo -e "Available fragments:"
+            ls -1 "$SCRIPT_DIR/../fragments/" | grep -v "^\\." || echo "  No fragments found"
+            exit 1
+        fi
+        ;;
+    
+    patterns)
+        list_patterns
+        ;;
+    
+    pattern)
+        if [ -z "$2" ]; then
+            echo -e "${RED}Error: Pattern name required${NC}"
+            echo -e "Usage: pip pattern <name>"
+            echo -e ""
+            list_patterns
+            exit 1
+        fi
+        show_pattern "$2"
+        ;;
+
+    mode)
+        show_mode
+        ;;
+
+    migrate)
+        require_execute "migrate"
+        migrate_piprc
+        ;;
+    
+    version|--version|-v)
+        show_version
+        ;;
+    
+    help|--help|-h)
+        show_help
+        ;;
+    
+    *)
+        echo -e "${RED}Error: Unknown command '$1'${NC}"
+        echo -e ""
+        echo -e "Use: ${YELLOW}pip help${NC} to see available commands"
+        exit 1
+        ;;
+esac

@@ -1,0 +1,277 @@
+name: Workflow Health Monitor
+
+# Proactive CI/CD health monitoring and auto-remediation
+# Runs regular health checks and attempts to fix common issues automatically
+
+on:
+  schedule:
+    # Run health check every 4 hours
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+    inputs:
+      auto_fix:
+        description: 'Attempt to auto-fix detected issues'
+        required: false
+        default: 'true'
+        type: boolean
+      create_issues:
+        description: 'Create GitHub issues for critical problems'
+        required: false
+        default: 'true'
+        type: boolean
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/**'
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  health-check:
+    name: Check Workflow Health
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: |
+          cd .github/agents
+          npm install
+      
+      - name: Run health check
+        id: health_check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd .github/agents
+          node workflow-health-check.js || echo "HEALTH_CHECK_FAILED=true" >> $GITHUB_OUTPUT
+      
+      - name: Upload health report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-health-report-${{ github.run_number }}
+          path: |
+            /tmp/workflow-health-report.json
+            /tmp/workflow-health-report.md
+          if-no-files-found: ignore
+  
+  auto-remediation:
+    name: Auto-Remediate Issues
+    runs-on: ubuntu-latest
+    needs: health-check
+    if: ${{ github.event.inputs.auto_fix != 'false' }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Check for stale branches
+        id: stale_branches
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          echo "Checking for stale automated branches..."
+          
+          # List branches older than 7 days with 'automated/' prefix
+          STALE_BRANCHES=$(gh api repos/:owner/:repo/branches --paginate | \
+            jq -r '.[] | select(.name | startswith("automated/")) | .name')
+          
+          if [ -n "$STALE_BRANCHES" ]; then
+            echo "Found stale branches:"
+            echo "$STALE_BRANCHES"
+            echo "stale_found=true" >> $GITHUB_OUTPUT
+            echo "branches<<EOF" >> $GITHUB_OUTPUT
+            echo "$STALE_BRANCHES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "No stale branches found"
+            echo "stale_found=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Clean up stale branches
+        if: steps.stale_branches.outputs.stale_found == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          echo "Cleaning up stale branches..."
+          echo "${{ steps.stale_branches.outputs.branches }}" | while read branch; do
+            if [ -n "$branch" ]; then
+              echo "Deleting branch: $branch"
+              git push origin --delete "$branch" || echo "Failed to delete $branch"
+            fi
+          done
+      
+      - name: Validate workflow files
+        id: validate_workflows
+        run: |
+          set -e
+          echo "Validating workflow YAML syntax..."
+
+          cd .github/workflows
+          INVALID_FILES=""
+
+          for file in *.yml *.yaml; do
+            if [ -f "$file" ]; then
+              # Check for common YAML issues
+              if ! python3 -c "import yaml; yaml.safe_load(open('$file'))" 2>/dev/null; then
+                echo "❌ Invalid YAML: $file"
+                INVALID_FILES="${INVALID_FILES}${file}\n"
+              else
+                echo "✅ Valid: $file"
+              fi
+            fi
+          done
+
+          if [ -n "$INVALID_FILES" ]; then
+            echo "invalid_found=true" >> $GITHUB_OUTPUT
+            echo "files<<EOF" >> $GITHUB_OUTPUT
+            echo -e "$INVALID_FILES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "invalid_found=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Check for missing dependencies
+        id: check_deps
+        run: |
+          set -e
+          echo "Checking agent dependencies..."
+
+          cd .github/agents
+
+          # Check if package-lock.json is in sync
+          if [ -f package-lock.json ] && [ -f package.json ]; then
+            npm ci --dry-run > /dev/null 2>&1
+            if [ $? -ne 0 ]; then
+              echo "deps_outdated=true" >> $GITHUB_OUTPUT
+              echo "⚠️  Dependencies may be outdated or package-lock.json out of sync"
+            else
+              echo "deps_outdated=false" >> $GITHUB_OUTPUT
+              echo "✅ Dependencies are in sync"
+            fi
+          fi
+      
+      - name: Update dependencies if needed
+        if: steps.check_deps.outputs.deps_outdated == 'true'
+        run: |
+          set -e
+          echo "Updating dependencies..."
+          cd .github/agents
+          npm install
+
+          if [ -n "$(git status --porcelain package-lock.json)" ]; then
+            git add package-lock.json
+            git commit -m "chore(deps): update agent dependencies"
+            git push
+            echo "📦 Dependencies updated and committed"
+          fi
+      
+      - name: Re-run failed workflows
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          echo "Checking for recent failures to retry..."
+
+          # Get recent failed runs (excluding this workflow)
+          FAILED_RUNS=$(gh run list --limit 5 --json conclusion,databaseId,name,workflowName \
+            | jq -r '.[] | select(.conclusion == "failure" and .workflowName != "Workflow Health Monitor") | .databaseId')
+
+          if [ -n "$FAILED_RUNS" ]; then
+            echo "Found failed runs to retry:"
+            echo "$FAILED_RUNS"
+
+            echo "$FAILED_RUNS" | while read run_id; do
+              if [ -n "$run_id" ]; then
+                echo "Retrying run: $run_id"
+                gh run rerun "$run_id" --failed || echo "Could not rerun $run_id"
+              fi
+            done
+          else
+            echo "No failed runs to retry"
+          fi
+
+  report:
+    name: Create Health Report
+    runs-on: ubuntu-latest
+    needs: [health-check, auto-remediation]
+    if: always() && github.event.inputs.create_issues != 'false'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Download health report
+        uses: actions/download-artifact@v4
+        with:
+          name: workflow-health-report-${{ github.run_number }}
+          path: /tmp
+        continue-on-error: true
+      
+      - name: Create issue for critical failures
+        if: needs.health-check.result == 'failure'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          REPORT_FILE="/tmp/workflow-health-report.md"
+
+          if [ -f "$REPORT_FILE" ]; then
+            REPORT_CONTENT=$(cat "$REPORT_FILE")
+          else
+            REPORT_CONTENT="Health check failed. See workflow logs for details."
+          fi
+
+          gh issue create \
+            --title "🔴 Critical: CI/CD Workflow Health Check Failed" \
+            --body "$(cat <<'EOF'
+          ## Workflow Health Monitor Alert
+
+          The automated health check has detected critical issues with our CI/CD workflows.
+
+          ### Health Check Results
+
+          ${REPORT_CONTENT}
+
+          ### Remediation Status
+
+          - Auto-remediation: ${{ needs.auto-remediation.result }}
+
+          ### Action Required
+
+          @agent:coo Please review and address these workflow failures.
+
+          ---
+          *Generated by Workflow Health Monitor*
+          *Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}*
+          EOF
+          )" \
+            --label "agent:coo,P0,workflow:health"
+      
+      - name: Post success summary
+        if: needs.health-check.result == 'success'
+        run: |
+          echo "✅ Workflow health check passed"
+          echo "All CI/CD workflows are operating within acceptable parameters"

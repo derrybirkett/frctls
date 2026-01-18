@@ -1,0 +1,15 @@
+FROM node:22-bookworm
+
+RUN apt-get update && apt-get install -y \
+  git \
+  bash \
+  ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN corepack enable
+RUN corepack prepare pnpm@latest --activate
+
+RUN npm install -g nx
+
+WORKDIR /workspace
+CMD ["sleep", "infinity"]

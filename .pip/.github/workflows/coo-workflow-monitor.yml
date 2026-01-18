@@ -1,0 +1,53 @@
+name: COO Workflow Monitor
+
+on:
+  workflow_run:
+    # Monitor all workflows
+    workflows: ["*"]
+    types: [completed]
+
+jobs:
+  triage:
+    # Only run for failed workflows
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    name: COO Workflow Triage
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: write
+      actions: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: |
+          cd .github/agents
+          npm install
+      
+      - name: Run COO workflow monitor
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI }}
+          WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
+          WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+          WORKFLOW_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          WORKFLOW_URL: ${{ github.event.workflow_run.html_url }}
+          WORKFLOW_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          cd .github/agents
+          node coo-workflow-monitor.js
+      
+      - name: Upload triage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coo-triage-report
+          path: /tmp/coo-triage-report.md
+          if-no-files-found: ignore

@@ -1,0 +1,2 @@
+# Ignore .pip submodule to prevent duplicate project detection
+.pip/

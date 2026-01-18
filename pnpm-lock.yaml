@@ -17,6 +17,9 @@ importers:
       '@nx/workspace':
         specifier: ^22.2.0
         version: 22.2.0
+      husky:
+        specifier: ^8.0.1
+        version: 8.0.3
       nx:
         specifier: ^22.2.0
         version: 22.2.0
@@ -1428,6 +1431,11 @@ packages:
   http-server@14.1.1:
     resolution: {integrity: sha512-+cbxadF40UXd9T01zUHgA+rlo2Bg1Srer4+B4NwIHdaGxAGGv59nYRnGGDJ9LBk7alpS0US+J+bLLdQOOkJq4A==}
     engines: {node: '>=12'}
+    hasBin: true
+
+  husky@8.0.3:
+    resolution: {integrity: sha512-+dQSyqPh4x1hlO1swXBiNb2HzTDN1I2IGLQx1GrBuiqFJfoMrnZWwVmatvSiO+Iz8fBUnf+lekwNo4c2LlXItg==}
+    engines: {node: '>=14'}
     hasBin: true
 
   iconv-lite@0.6.3:
@@ -3561,6 +3569,8 @@ snapshots:
     transitivePeerDependencies:
       - debug
       - supports-color
+
+  husky@8.0.3: {}
 
   iconv-lite@0.6.3:
     dependencies:

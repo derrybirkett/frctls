@@ -1,0 +1,104 @@
+name: PR Review Agents
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  cto-review:
+    name: CTO Technical Review
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+      contents: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: |
+          cd .github/agents
+          npm install
+      
+      - name: Run CTO review
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          cd .github/agents
+          node cto-review-agent.js
+  
+  ciso-review:
+    name: CISO Security Review
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+      contents: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: |
+          cd .github/agents
+          npm install
+      
+      - name: Run CISO security review
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          cd .github/agents
+          node ciso-review-agent.js
+      
+      - name: Check for critical security issues
+        id: security-check
+        run: |
+          # Check if CISO agent set block flag
+          if [ -f /tmp/ciso-block.flag ]; then
+            echo "Critical security issues found"
+            exit 1
+          fi
+  
+  auto-merge:
+    name: Auto-Merge (Conditional)
+    needs: [cto-review, ciso-review]
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+    # Only auto-merge for automated branches that pass all reviews
+    if: |
+      startsWith(github.event.pull_request.head.ref, 'automated/') &&
+      needs.cto-review.result == 'success' &&
+      needs.ciso-review.result == 'success'
+    
+    steps:
+      - name: Enable auto-merge
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              merge_method: 'squash',
+              commit_title: `${context.payload.pull_request.title} (#${context.payload.pull_request.number})`,
+              commit_message: `${context.payload.pull_request.body}\n\nCo-Authored-By: Warp <agent@warp.dev>`
+            });

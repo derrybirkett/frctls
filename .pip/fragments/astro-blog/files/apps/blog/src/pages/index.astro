@@ -1,0 +1,45 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+// Get all blog posts and sort by date (newest first)
+const posts = (await getCollection('blog'))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<Layout title="Blog" description="Latest blog posts">
+	<div class="max-w-4xl mx-auto">
+		<h1 class="text-4xl font-bold mb-8">Blog Posts</h1>
+		
+		<div class="space-y-8">
+			{posts.map((post) => (
+				<article class="border-b border-gray-200 dark:border-gray-800 pb-8">
+					<a href={`/posts/${post.slug}/`} class="block group">
+						<h2 class="text-2xl font-bold mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+							{post.data.title}
+						</h2>
+						<p class="text-gray-600 dark:text-gray-400 mb-3">
+							{post.data.description}
+						</p>
+						<div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-500">
+							<time datetime={post.data.date.toISOString()}>
+								{post.data.date.toLocaleDateString('en-US', { 
+									year: 'numeric', 
+									month: 'long', 
+									day: 'numeric' 
+								})}
+							</time>
+							{post.data.author && (
+								<span>by {post.data.author}</span>
+							)}
+						</div>
+					</a>
+				</article>
+			))}
+		</div>
+		
+		{posts.length === 0 && (
+			<p class="text-gray-600 dark:text-gray-400">No posts yet. Check back soon!</p>
+		)}
+	</div>
+</Layout>
