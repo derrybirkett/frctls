@@ -23,6 +23,18 @@ All notable changes to this project will be documented in this file.
 - GitHub Pages deployment and content automation
 - Scheduled content publishing workflow
 
+## 2026-01-18 — Repository Cleanup & Security Fixes
+### Fixed
+- **Duplicate PR Prevention** - Implemented automated script to prevent duplicate "Auto Implement" PRs (Fixes #50)
+- **Security Hardening** - Replaced hardcoded database credentials with environment variables (Fixes #27)
+- **Dependency Conflicts** - Resolved Snyk/Astro upgrade conflicts and pnpm lockfile issues (Fixes #29)
+- **Content Duplication** - Resolved duplicate blog posts for "Strategic Change vs Tactical Fixes"
+
+### Changed
+- **Quality Gates** - Verified and enabled pre-commit hooks for linting and formatting
+- **Repository Hygiene** - Removed ~18k lines of accidental `.nx` cache files from the repository
+
+
 ## 2025-12-09 — Branch Protection & Strategic Roadmap
 ### Added
 - **Git hooks system** - Pre-commit hook blocks direct commits to main branch locally
