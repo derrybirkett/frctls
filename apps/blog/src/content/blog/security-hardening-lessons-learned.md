@@ -5,7 +5,7 @@ pubDate: 2026-01-17
 author: 'Fractals of Change Team'
 category: 'implementation'
 tags: ['security', 'devops', 'compliance', 'best-practices']
-heroImage: '/blog-placeholder.jpg'
+heroImage: '../../assets/blog-placeholder-1.jpg'
 ---
 
 When was the last time you audited your repository's security posture? If you're like most development teams, the answer is probably "not recently enough." Today, we're sharing the story of how we discovered and fixed critical security vulnerabilities in our repository—and the lessons you can apply to your own projects.

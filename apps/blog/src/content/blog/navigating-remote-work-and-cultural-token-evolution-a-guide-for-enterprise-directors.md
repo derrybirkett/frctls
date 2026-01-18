@@ -2,7 +2,7 @@
 title: 'Navigating Remote Work and Cultural Token Evolution: A Guide for Enterprise Directors'
 description: 'Explore the impact of remote work on cultural token evolution in large organizations and discover actionable strategies for effective management.'
 pubDate: '2025-12-16'
-heroImage: '/blog-placeholder-1.jpg'
+heroImage: '../../assets/blog-placeholder.jpg'
 tags: ['remote work', 'cultural token evolution', 'enterprise directors', 'digital transformation', 'virtual collaboration']
 ---
 

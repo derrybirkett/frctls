@@ -2,7 +2,7 @@
 title: 'Navigating Regulatory Requirements: A Fractal Approach to Compliance and Change for Enterprise Directors'
 description: 'Learn how enterprise directors can strategically navigate regulatory requirements to drive sustainable change and maximize ROI.'
 pubDate: '2026-01-13'
-heroImage: '/blog-placeholder-1.jpg'
+heroImage: '../../assets/blog-placeholder.jpg'
 tags: ['enterprise', 'compliance', 'regulatory requirements', 'fractal approach', 'change management']
 ---
 
