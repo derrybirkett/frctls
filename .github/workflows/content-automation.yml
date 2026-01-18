@@ -50,16 +50,27 @@ jobs:
         run: |
           echo "Checking for content scheduled for publication..."
           
-          # Check if there are any draft posts with future publish dates that are now ready
           CURRENT_DATE=$(date -u +"%Y-%m-%d")
           echo "Current date: $CURRENT_DATE"
           
-          # Look for draft posts in a drafts directory (we'll create this structure)
+          # Look for draft posts with pubDate <= current date (all overdue posts)
           if [ -d "apps/blog/src/content/drafts" ]; then
-            READY_POSTS=$(find apps/blog/src/content/drafts -name "*.md" -exec grep -l "pubDate.*$CURRENT_DATE\|pubDate.*$(date -u -d '-1 day' +"%Y-%m-%d")" {} \; || true)
-            if [ -n "$READY_POSTS" ]; then
+            READY_POSTS=$(find apps/blog/src/content/drafts -name "*.md" -type f)
+            FILTERED_POSTS=""
+            
+            for post in $READY_POSTS; do
+              # Extract pubDate from frontmatter
+              PUB_DATE=$(grep -m 1 "^pubDate:" "$post" | sed "s/pubDate: *['\"]\\?\\([0-9-]*\\).*/\\1/")
+              
+              # Compare dates: publish if pubDate <= current date
+              if [[ "$PUB_DATE" < "$CURRENT_DATE" ]] || [[ "$PUB_DATE" == "$CURRENT_DATE" ]]; then
+                FILTERED_POSTS="$FILTERED_POSTS $post"
+              fi
+            done
+            
+            if [ -n "$FILTERED_POSTS" ]; then
               echo "ready_posts=true" >> $GITHUB_OUTPUT
-              echo "posts_to_publish=$READY_POSTS" >> $GITHUB_OUTPUT
+              echo "posts_to_publish=$FILTERED_POSTS" >> $GITHUB_OUTPUT
             else
               echo "ready_posts=false" >> $GITHUB_OUTPUT
             fi
