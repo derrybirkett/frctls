@@ -3,7 +3,7 @@ title: 'Security Hardening: Lessons from a Critical Repository Audit'
 description: 'How we reduced security risk from HIGH to LOW through comprehensive auditing, automated scanning, and defense-in-depth strategies'
 pubDate: 2026-01-17
 author: 'Fractals of Change Team'
-category: 'security'
+category: 'implementation'
 tags: ['security', 'devops', 'compliance', 'best-practices']
 heroImage: '/blog-placeholder.jpg'
 ---
