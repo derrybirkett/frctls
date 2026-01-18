@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json.schemastore.org/nx-project",
+  "name": "pip",
+  "projectType": "library",
+  "targets": {
+    "help": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./bin/pip help"
+      }
+    },
+    "version": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./bin/pip version"
+      }
+    },
+    "validate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./bin/pip validate"
+      }
+    },
+    "patterns": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./bin/pip patterns"
+      }
+    },
+    "test-bootstrap": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./bin/test-bootstrap.sh"
+      }
+    },
+    "review": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./bin/pip review"
+      }
+    },
+    "wrap": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./bin/pip wrap"
+      }
+    },
+    "bootstrap": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./bin/pip bootstrap",
+        "forwardAllArgs": true
+      }
+    },
+    "apply-nx-dev-infra": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./bin/pip apply nx-dev-infra",
+        "forwardAllArgs": true
+      }
+    },
+    "apply-nx-product-surfaces": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./bin/pip apply nx-product-surfaces",
+        "forwardAllArgs": true
+      }
+    },
+    "apply-astro-blog": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./bin/pip apply astro-blog",
+        "forwardAllArgs": true
+      }
+    }
+  }
+}

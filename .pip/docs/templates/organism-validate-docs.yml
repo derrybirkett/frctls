@@ -1,0 +1,80 @@
+name: Validate Activity Log & Changelog
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  docs-hygiene:
+    name: Docs hygiene
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate activity log / changelog updated
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            base_ref="origin/${GITHUB_BASE_REF}"
+            git fetch --no-tags origin "${GITHUB_BASE_REF}" --depth=1
+            range="${base_ref}...HEAD"
+          else
+            before="${GITHUB_EVENT_BEFORE:-}"
+            after="${GITHUB_SHA:-}"
+            if [[ -n "$before" && -n "$after" && "$before" != "0000000000000000000000000000000000000000" ]]; then
+              range="${before}...${after}"
+            else
+              range="HEAD~1...HEAD"
+            fi
+          fi
+
+          echo "Diff range: ${range}"
+          changed_files=$(git diff --name-only "$range" | sed '/^$/d' || true)
+
+          if [[ -z "$changed_files" ]]; then
+            echo "No changed files detected; skipping."
+            exit 0
+          fi
+
+          activity_log="docs/activity-log.md"
+          changelog="docs/changelog.md"
+
+          activity_touched=false
+          changelog_touched=false
+
+          if echo "$changed_files" | grep -qx "$activity_log"; then activity_touched=true; fi
+          if echo "$changed_files" | grep -qx "$changelog"; then changelog_touched=true; fi
+
+          # Require activity-log update for any substantive (non-docs-only) change.
+          # Docs-only changes are allowed without updating the activity log.
+          non_docs_changes=$(echo "$changed_files" | grep -Ev '^(docs/|README\.md$|\.github/)' || true)
+
+          if [[ -n "$non_docs_changes" && "$activity_touched" != "true" ]]; then
+            echo "::error::Substantive changes detected but docs/activity-log.md was not updated."
+            echo "Please add a row to docs/activity-log.md describing what changed and why."
+            echo "Substantive files:"
+            echo "$non_docs_changes"
+            exit 1
+          fi
+
+          # Require changelog update when likely user-facing code changed.
+          # This is heuristic; adjust path patterns per project conventions.
+          user_facing_changes=$(echo "$changed_files" | grep -E '^(apps/|packages/|libs/|src/|web/|frontend/|backend/|api/)' || true)
+
+          if [[ -n "$user_facing_changes" && "$changelog_touched" != "true" ]]; then
+            echo "::error::Likely user-facing code changed but docs/changelog.md was not updated."
+            echo "Please add an entry under 'Unreleased' in docs/changelog.md (or justify why not user-facing)."
+            echo "User-facing files:"
+            echo "$user_facing_changes"
+            exit 1
+          fi
+
+          echo "✅ Docs hygiene checks passed."

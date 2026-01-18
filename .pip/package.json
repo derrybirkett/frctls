@@ -1,0 +1,11 @@
+{
+  "name": "pip",
+  "private": true,
+  "description": ".pip (Project Intelligence & Process) kernel repo",
+  "scripts": {
+    "nx": "nx"
+  },
+  "devDependencies": {
+    "nx": "^20.3.0"
+  }
+}

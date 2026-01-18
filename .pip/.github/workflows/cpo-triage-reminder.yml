@@ -1,0 +1,55 @@
+name: CPO Triage Reminder
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # Monday 9 AM UTC
+  workflow_dispatch:
+
+jobs:
+  create-triage-issue:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    
+    steps:
+      - name: Count pending approvals
+        id: count
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'needs-approval',
+              state: 'open'
+            });
+            return issues.length;
+      
+      - name: Create triage issue
+        if: steps.count.outputs.result > 0
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const count = ${{ steps.count.outputs.result }};
+            const body = `## CPO Weekly Triage\n\n` +
+              `**Pending Approvals:** ${count}\n\n` +
+              `### Agent Suggestions\n` +
+              `[View all items needing approval](` +
+              `https://github.com/${context.repo.owner}/${context.repo.repo}/issues?q=is%3Aissue+is%3Aopen+label%3Aneeds-approval)\n\n` +
+              `### Approval Workflow\n` +
+              `1. Review each suggestion\n` +
+              `2. Approve: \`gh issue edit <N> --add-label roadmap --remove-label needs-approval\`\n` +
+              `3. Reject: \`gh issue close <N> --reason "not planned"\`\n\n` +
+              `You can also use the triage helper script:\n` +
+              `\`\`\`bash\n` +
+              `.github/agents/cpo-triage-helper.sh\n` +
+              `\`\`\`\n\n` +
+              `See [CPO Triage Guide](docs/roadmap-guide.md#cpo-triage-process) for details.`;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `CPO Triage: ${count} items need approval`,
+              body: body,
+              labels: ['agent-cpo', 'triage']
+            });

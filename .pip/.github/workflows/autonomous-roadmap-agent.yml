@@ -1,0 +1,56 @@
+name: Autonomous Roadmap Agent
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:
+    inputs:
+      priority:
+        description: 'Priority filter'
+        required: false
+        default: 'p1'
+        type: choice
+        options:
+          - p0
+          - p1
+          - p2
+          - all
+      issue_number:
+        description: 'Specific issue number (optional)'
+        required: false
+
+jobs:
+  implement-roadmap-task:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: write
+      actions: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PROJECT_TOKEN }}
+      
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Run autonomous agent
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PROJECT_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI }}
+          PRIORITY_FILTER: ${{ inputs.priority || 'p1' }}
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+        run: node .github/agents/autonomous-agent.js

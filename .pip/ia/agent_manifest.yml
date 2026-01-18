@@ -1,0 +1,111 @@
+# Short machine-readable manifest of project agents
+
+agents:
+  - name: CEO
+    owner: <name/email or @github>
+    primary_docs:
+      - .pip/ia/agents/ceo/role.md
+      - .pip/ia/agents/ceo/responsibilities.md
+    responsibilities:
+      - Mission and strategy
+      - Final decision authority
+      - Prioritization across functions
+    tools: []
+
+  - name: CTO
+    owner: <name/email or @github>
+    primary_docs:
+      - .pip/ia/agents/cto/role.md
+      - .pip/ia/agents/cto/responsibilities.md
+      - .pip/ia/agents/cto/tech-stack/tech-stack.md
+    responsibilities:
+      - Architecture and quality
+      - Delivery standards
+      - Reliability and performance
+    tools:
+      - path: bin/bootstrap-project.sh
+        description: Interactive mission and docs bootstrap
+      - path: bin/bootstrap.sh
+        description: Repo bootstrap wizard for `.pip` genomes
+      - path: bin/test-bootstrap.sh
+        description: Non-interactive bootstrap verification
+      - path: bin/apply-nx-dev-infra.sh
+        description: Apply Nx + Docker + Postgres fragment
+
+  - name: CPO
+    owner: <name/email or @github>
+    primary_docs:
+      - .pip/ia/agents/cpo/role.md
+      - .pip/ia/agents/cpo/responsibilities.md
+      - .pip/ia/agents/cpo/initiative-one-pager.md
+    responsibilities:
+      - Roadmap and scope
+      - Discovery and outcomes
+      - Acceptance criteria
+    tools: []
+
+  - name: CISO
+    owner: <name/email or @github>
+    primary_docs:
+      - .pip/ia/agents/ciso/role.md
+      - .pip/ia/agents/ciso/responsibilities.md
+      - .pip/ia/agents/ciso/security-policies.md
+    responsibilities:
+      - Security policies
+      - Risk management
+      - Incident readiness
+    tools: []
+
+  - name: CMO
+    owner: <name/email or @github>
+    primary_docs:
+      - .pip/ia/agents/cmo/role.md
+      - .pip/ia/agents/cmo/responsibilities.md
+      - .pip/ia/agents/cmo/marketing-strategy.md
+    responsibilities:
+      - Messaging and channels
+      - Content calendar
+      - Campaign performance
+    tools: []
+
+  - name: CRO
+    owner: <name/email or @github>
+    primary_docs:
+      - .pip/ia/agents/cro/role.md
+      - .pip/ia/agents/cro/responsibilities.md
+      - .pip/ia/agents/cro/revenue-strategy.md
+    responsibilities:
+      - Pricing and packaging
+      - Funnel optimization
+      - Retention and expansion
+    tools: []
+
+  - name: COO
+    owner: <name/email or @github>
+    primary_docs:
+      - .pip/ia/agents/coo/role.md
+      - .pip/ia/agents/coo/responsibilities.md
+      - .pip/ia/agents/coo/workflow-monitoring-playbook.md
+    responsibilities:
+      - Delivery operations and release hygiene
+      - Wrap-up checklist ownership
+      - Compliance for docs/tags
+      - CI/CD workflow monitoring and health
+      - Auto-remediation of common failures
+      - Incident triage and escalation
+      - Proactive workflow health checks
+    tools:
+      - path: bin/wrap-up.sh
+        description: Runs wrap-up checklist, commit, tag, push
+      - path: .github/agents/workflow-health-check.js
+        description: Proactive CI/CD health monitoring and diagnostics
+      - path: .github/agents/coo-workflow-monitor.js
+        description: AI-powered workflow failure triage and auto-remediation
+      - path: .github/workflows/workflow-health-monitor.yml
+        description: Automated health checks, validation, and self-healing
+      - path: .github/workflows/coo-workflow-monitor.yml
+        description: Reactive workflow failure monitoring on each run
+      - path: GitHub Actions API
+        description: Monitor workflows, re-run failed jobs, manage branches
+      - path: GitHub CLI (gh)
+        description: Workflow management and automation

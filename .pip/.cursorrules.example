@@ -1,0 +1,99 @@
+# [Project Name] - AI Agent Guidelines
+
+## PIP Framework Integration
+
+This project uses the `.pip` framework for AI-assisted development.
+
+**CRITICAL**: Before starting any work, read `.pip/fragment-prompt.md` for complete guidelines.
+
+## Quick Rules (Full details in .pip/fragment-prompt.md)
+
+### Git Workflow (MANDATORY)
+- **NEVER work directly on main branch**
+- **ALWAYS create a feature branch first**: `git checkout -b feat/your-feature`
+- Branch types: `feat/`, `fix/`, `docs/`, `chore/`
+
+### Documentation (REQUIRED)
+- **Update `docs/activity-log.md`** before completing any work
+- **Update `docs/changelog.md`** for user-facing changes
+- Format: `| Date | Agent | Commit/PR | What Changed | Why | Links |`
+
+### Tech Stack (CTO Approved)
+Reference: `.pip/ia/agents/cto/tech-stack/tech-stack.md`
+
+**Use these technologies:**
+- **Monorepo**: Nx
+- **UI**: ShadCN UI components
+- **Backend**: Supabase (Postgres + Auth)
+- **Testing**: Playwright (E2E), Vitest/Jest (unit)
+- **Payments**: Stripe
+- **Operations**: Docker
+
+**Do NOT use custom auth** - use Supabase Auth
+
+### Delivery Method
+Reference: `.pip/method/delivery-method.md`
+
+For any feature:
+1. Big Picture (problem, vision, metrics)
+2. Data Models (entities, relationships)
+3. APIs (contracts, endpoints, auth)
+4. UI (flows, components, accessibility)
+5. Definition of Done (tests, docs, security)
+
+### Agent Roles
+- **CEO**: Mission, strategy, cross-functional
+- **CTO**: Architecture, tech stack, delivery
+- **CPO**: Product roadmap, features
+- **CISO**: Security, risk, compliance
+- **CMO**: Messaging, content, marketing
+- **CRO**: Pricing, packaging, revenue
+
+### Security (CISO Requirements)
+- **NEVER commit secrets** - use environment variables
+- Use `direnv` for local secrets (`.envrc` is gitignored)
+- Follow `.pip/ia/agents/ciso/security-policies.md`
+
+### Workflow Template
+```bash
+# 1. Create feature branch
+git checkout main && git pull origin main
+git checkout -b feat/your-feature
+
+# 2. Make changes
+# 3. Update docs/activity-log.md
+# 4. Update docs/changelog.md (if user-facing)
+# 5. Commit and push
+git add . && git commit -m "feat: description"
+git push origin feat/your-feature
+```
+
+### Commit Format
+- Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`
+- Format: `<type>: <subject>` (imperative, ≤50 chars)
+- Example: `feat: add user dashboard with profile settings`
+
+## Common Mistakes to Avoid
+
+❌ Working directly on main branch
+❌ Choosing tech not in approved stack
+❌ Skipping activity log updates
+❌ Building custom auth (use Supabase)
+❌ Making security decisions without CISO review
+
+## Full Documentation
+
+- **AI Agent Entrypoint**: `.pip/fragment-prompt.md` (READ THIS FIRST)
+- **Warp Guidance**: `.pip/WARP.md`
+- **Delivery Method**: `.pip/method/delivery-method.md`
+- **Tech Stack**: `.pip/ia/agents/cto/tech-stack/tech-stack.md`
+- **Security**: `.pip/ia/agents/ciso/security-policies.md`
+- **Activity Log**: `docs/activity-log.md`
+- **Changelog**: `docs/changelog.md`
+
+---
+
+**Setup Instructions**:
+1. Copy this file to your project root: `cp .pip/.cursorrules.example .cursorrules`
+2. Replace `[Project Name]` with your actual project name
+3. Customize as needed for your specific project

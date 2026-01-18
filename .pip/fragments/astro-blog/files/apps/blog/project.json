@@ -1,0 +1,32 @@
+{
+  "name": "blog",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/blog/src",
+  "projectType": "application",
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter blog dev",
+        "cwd": "apps/blog"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter blog build",
+        "cwd": "apps/blog",
+        "outputs": ["{workspaceRoot}/apps/blog/dist"]
+      }
+    },
+    "preview": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter blog preview",
+        "cwd": "apps/blog"
+      },
+      "dependsOn": ["build"]
+    }
+  },
+  "tags": ["type:app", "scope:blog"]
+}

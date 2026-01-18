@@ -38,7 +38,35 @@ fi
 
 # Run git-secrets check if available
 if command -v git-secrets &> /dev/null; then
-    git secrets --pre_commit_hook -- "$@"
+    echo "🔍 Running git-secrets scan..."
+    if ! git secrets --pre_commit_hook -- "$@"; then
+        echo -e "${RED}❌ git-secrets found potential secrets!${NC}"
+        exit 1
+    fi
+    echo "✅ No secrets detected"
+else
+    echo -e "${YELLOW}⚠️  git-secrets not installed - running basic secret check${NC}"
+    
+    # Basic pattern matching for common secrets
+    secrets_patterns=(
+        "ghp_[0-9a-zA-Z]{36}"
+        "gho_[0-9a-zA-Z]{36}"
+        "github_pat_[0-9a-zA-Z_]{82}"
+        "sk-[0-9a-zA-Z]{48}"
+        "AKIA[0-9A-Z]{16}"
+    )
+    
+    for pattern in "${secrets_patterns[@]}"; do
+        if git diff --cached | grep -qE "$pattern"; then
+            echo -e "${RED}❌ Potential secret detected: pattern matching '$pattern'${NC}"
+            echo "Please remove the secret and use environment variables instead."
+            exit 1
+        fi
+    done
+    
+    echo -e "${YELLOW}⚠️  Basic check passed, but consider installing git-secrets for better protection:${NC}"
+    echo "    brew install git-secrets  # macOS"
+    echo "    apt-get install git-secrets  # Ubuntu"
 fi
 
 exit 0

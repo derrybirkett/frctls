@@ -1,0 +1,23 @@
+# .piprc — organism configuration for the .pip kernel
+#
+# Format: KEY=VALUE (one per line)
+# - Lines starting with '#' are comments
+# - Avoid secrets here; use .envrc for tokens and credentials
+#
+# Resolution order:
+# 1) environment variables (e.g., PIP_MODE=execute)
+# 2) this file (.piprc)
+# 3) defaults baked into the kernel
+
+PIPRC_VERSION=1
+
+# Execution mode (agent guardrails)
+# observe | propose | execute
+# Recommended default for most projects is 'propose'.
+PIP_MODE=propose
+
+# Action mode (execution strategy)
+# live: run commands normally
+# confirm: prompt before side-effecting commands
+# dry-run: avoid side effects (currently only `pip wrap` is supported)
+PIP_ACTION_MODE=live

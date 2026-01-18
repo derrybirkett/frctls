@@ -17,8 +17,8 @@ on:
           - generate-content-ideas
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: write  # Required: Move files and commit changes
+  pull-requests: write  # Required: Create PRs for scheduled content
 
 jobs:
   content-automation:
@@ -43,7 +43,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd apps/blog
-          pnpm install
+          pnpm install --no-frozen-lockfile
 
       - name: Check for scheduled content
         id: check-content

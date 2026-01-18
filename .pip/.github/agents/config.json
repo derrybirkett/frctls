@@ -1,0 +1,71 @@
+{
+  "ai_provider": {
+    "type": "openai",
+    "model": "gpt-4-turbo-preview",
+    "temperature": {
+      "implementation": 0.3,
+      "cto_review": 0.2,
+      "ciso_review": 0.1
+    }
+  },
+  "pip_patterns": {
+    "file_types": ["md", "sh", "yml", "yaml", "json"],
+    "key_directories": [
+      "docs/",
+      "ia/agents/",
+      "patterns/",
+      "fragments/",
+      "bin/",
+      ".github/"
+    ],
+    "code_style": {
+      "shell": "bash with set -e",
+      "markdown": "GitHub Flavored Markdown",
+      "line_length": 100
+    }
+  },
+  "roadmap_integration": {
+    "issue_query": {
+      "required_labels": ["roadmap"],
+      "priority_order": ["priority-p0", "priority-p1", "priority-p2"],
+      "exclude_labels": ["needs-approval", "blocked", "agent-suggestion"]
+    },
+    "auto_assign": false,
+    "branch_pattern": "automated/{issue-number}-{slug}",
+    "duplicate_prevention": {
+      "enabled": true,
+      "check_existing_automated_prs": true,
+      "check_issue_specific_prs": true,
+      "max_automated_prs": 0
+    }
+  },
+  "review_agents": {
+    "cto": {
+      "enabled": true,
+      "focus_areas": [
+        "documentation clarity",
+        "consistency with .pip principles",
+        "shell script best practices",
+        "markdown formatting",
+        "LEAN methodology adherence"
+      ],
+      "create_issues_for": ["major", "critical"]
+    },
+    "ciso": {
+      "enabled": true,
+      "scan_for": [
+        "hardcoded secrets",
+        "insecure file permissions",
+        "unsafe shell commands",
+        "exposed API keys",
+        "credential leaks in git history"
+      ],
+      "block_on": "critical"
+    }
+  },
+  "cpo_triage": {
+    "suggestion_label": "agent-suggestion",
+    "approval_label": "needs-approval",
+    "approved_milestone_required": true
+  }
+}
