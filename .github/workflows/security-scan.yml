@@ -1,0 +1,244 @@
+name: Security Scanning
+
+on:
+  push:
+    branches: [main, develop, 'feat/**', 'fix/**']
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run weekly security scan every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  security-events: write
+
+jobs:
+  secret-scanning:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for comprehensive scanning
+
+      - name: Run Gitleaks secret scanner
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_SUMMARY: true
+
+  dependency-scanning:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run audit
+        run: |
+          echo "🔍 Running security audit..."
+          pnpm audit --audit-level=moderate || true
+          
+      - name: Check for high/critical vulnerabilities
+        run: |
+          echo "🚨 Checking for high/critical vulnerabilities..."
+          if pnpm audit --audit-level=high 2>&1 | grep -q "vulnerabilities"; then
+            echo "❌ High or critical vulnerabilities found!"
+            exit 1
+          else
+            echo "✅ No high/critical vulnerabilities found"
+          fi
+
+  workflow-security:
+    name: GitHub Actions Security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check workflow permissions
+        run: |
+          echo "🔍 Auditing GitHub Actions workflow permissions..."
+          
+          # Check for overly permissive workflows
+          if grep -r "permissions:.*write-all" .github/workflows/; then
+            echo "❌ Found workflow with write-all permissions!"
+            exit 1
+          fi
+          
+          # Check for workflows without explicit permissions
+          workflows_without_perms=$(find .github/workflows -name "*.yml" -exec grep -L "permissions:" {} \;)
+          if [ -n "$workflows_without_perms" ]; then
+            echo "⚠️ Warning: Some workflows don't specify permissions:"
+            echo "$workflows_without_perms"
+          else
+            echo "✅ All workflows have explicit permissions"
+          fi
+
+      - name: Check for hardcoded secrets in workflows
+        run: |
+          echo "🔍 Checking workflows for hardcoded secrets..."
+          
+          # Patterns that might indicate hardcoded secrets
+          patterns=("ghp_" "gho_" "github_pat_" "sk-" "API_KEY.*=.*['\"]" "TOKEN.*=.*['\"]" "SECRET.*=.*['\"]")
+          
+          found_issues=0
+          for pattern in "${patterns[@]}"; do
+            if grep -r "$pattern" .github/workflows/ --exclude="security-scan.yml"; then
+              echo "❌ Found potential hardcoded secret pattern: $pattern"
+              found_issues=1
+            fi
+          done
+          
+          if [ $found_issues -eq 0 ]; then
+            echo "✅ No hardcoded secrets detected in workflows"
+          else
+            exit 1
+          fi
+
+  environment-files:
+    name: Environment File Security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for committed .env files
+        run: |
+          echo "🔍 Checking for accidentally committed environment files..."
+          
+          # Check if any .env files (except .env.example) are tracked
+          env_files=$(git ls-files | grep -E '\.env($|\.)' | grep -v '\.env\.example' || true)
+          
+          if [ -n "$env_files" ]; then
+            echo "❌ Found committed .env files:"
+            echo "$env_files"
+            echo ""
+            echo "These files should be removed from git history!"
+            exit 1
+          else
+            echo "✅ No .env files are committed"
+          fi
+
+      - name: Verify .env.example exists
+        run: |
+          if [ -f ".env.example" ]; then
+            echo "✅ .env.example template exists"
+          else
+            echo "⚠️ Warning: .env.example not found"
+          fi
+
+  pre-commit-verification:
+    name: Pre-commit Hook Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check pre-commit hook installation
+        run: |
+          echo "🔍 Verifying pre-commit hook..."
+          
+          if [ -f ".github/scripts/pre-commit-hook.sh" ]; then
+            echo "✅ Pre-commit hook script exists"
+            
+            # Check if hook is executable
+            if [ -x ".github/scripts/pre-commit-hook.sh" ]; then
+              echo "✅ Pre-commit hook is executable"
+            else
+              echo "⚠️ Warning: Pre-commit hook is not executable"
+            fi
+          else
+            echo "❌ Pre-commit hook script not found!"
+            exit 1
+          fi
+
+      - name: Check .gitignore completeness
+        run: |
+          echo "🔍 Verifying .gitignore coverage..."
+          
+          required_patterns=(
+            ".env"
+            ".env.*"
+            ".envrc"
+            "*.pem"
+            "*.key"
+            "node_modules"
+          )
+          
+          missing_patterns=()
+          for pattern in "${required_patterns[@]}"; do
+            if ! grep -q "$pattern" .gitignore; then
+              missing_patterns+=("$pattern")
+            fi
+          done
+          
+          if [ ${#missing_patterns[@]} -eq 0 ]; then
+            echo "✅ .gitignore has all required security patterns"
+          else
+            echo "❌ Missing patterns in .gitignore:"
+            printf '%s\n' "${missing_patterns[@]}"
+            exit 1
+          fi
+
+  security-report:
+    name: Generate Security Report
+    runs-on: ubuntu-latest
+    needs: [secret-scanning, dependency-scanning, workflow-security, environment-files, pre-commit-verification]
+    if: always()
+    steps:
+      - name: Security Scan Summary
+        run: |
+          echo "# 🔒 Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Scan Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Check job results
+          if [ "${{ needs.secret-scanning.result }}" == "success" ]; then
+            echo "✅ Secret Scanning: PASSED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Secret Scanning: FAILED" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ needs.dependency-scanning.result }}" == "success" ]; then
+            echo "✅ Dependency Scanning: PASSED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Dependency Scanning: FAILED" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ needs.workflow-security.result }}" == "success" ]; then
+            echo "✅ Workflow Security: PASSED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Workflow Security: FAILED" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ needs.environment-files.result }}" == "success" ]; then
+            echo "✅ Environment File Security: PASSED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Environment File Security: FAILED" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ needs.pre-commit-verification.result }}" == "success" ]; then
+            echo "✅ Pre-commit Verification: PASSED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Pre-commit Verification: FAILED" >> $GITHUB_STEP_SUMMARY
+          fi

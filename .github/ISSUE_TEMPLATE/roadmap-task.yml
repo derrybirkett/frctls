@@ -1,0 +1,130 @@
+name: 🎯 Roadmap Task
+description: Create a task from the code review recommendations roadmap
+title: "[TASK-ID]: Brief description"
+labels: ["roadmap", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Roadmap Task
+        Use this template to create actionable tasks from [docs/code-review-recommendations.md](../docs/code-review-recommendations.md)
+        
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority Level
+      description: What priority level is this task?
+      options:
+        - 🔴 High Priority (HP)
+        - 🟡 Medium Priority (MP)
+        - 🟢 Low Priority (LP)
+      default: 0
+    validations:
+      required: true
+      
+  - type: input
+    id: task-id
+    attributes:
+      label: Task ID
+      description: "Reference ID from recommendations (e.g., HP-1, MP-2, LP-3)"
+      placeholder: "HP-1"
+    validations:
+      required: true
+      
+  - type: input
+    id: effort
+    attributes:
+      label: Estimated Effort
+      description: "Time estimate (e.g., 10 minutes, 1 hour, 2 hours)"
+      placeholder: "30 minutes"
+    validations:
+      required: true
+      
+  - type: textarea
+    id: description
+    attributes:
+      label: Task Description
+      description: What needs to be done?
+      placeholder: |
+        Describe the task clearly...
+        
+        **Current State**: What's the issue or gap?
+        **Desired State**: What should it look like when done?
+        **Impact**: Why is this important?
+    validations:
+      required: true
+      
+  - type: textarea
+    id: files
+    attributes:
+      label: Files to Modify
+      description: List the files that need to be changed
+      placeholder: |
+        - apps/blog/astro.config.mjs
+        - docker-compose.yml
+      render: markdown
+    validations:
+      required: false
+      
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: How will we know this is complete?
+      placeholder: |
+        - [ ] Tests pass
+        - [ ] Configuration is correct
+        - [ ] Documentation is updated
+      render: markdown
+    validations:
+      required: true
+      
+  - type: textarea
+    id: test-plan
+    attributes:
+      label: Test Plan
+      description: How should this be tested?
+      placeholder: |
+        1. Run `pnpm test:all`
+        2. Verify [specific behavior]
+        3. Check [specific output]
+      render: markdown
+    validations:
+      required: false
+      
+  - type: dropdown
+    id: blocks-others
+    attributes:
+      label: Blocks Other Tasks?
+      description: Does this task need to be completed before others can start?
+      options:
+        - "No"
+        - "Yes"
+      default: 0
+    validations:
+      required: false
+      
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: List any tasks that must be completed first, or tasks this blocks
+      placeholder: |
+        **Depends on**: None
+        **Blocks**: HP-3, HP-4
+      render: markdown
+    validations:
+      required: false
+      
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes
+      description: Any other context, links, or references
+      placeholder: |
+        - Related documentation: [link]
+        - Reference issue: #123
+        - API documentation: [link]
+      render: markdown
+    validations:
+      required: false
