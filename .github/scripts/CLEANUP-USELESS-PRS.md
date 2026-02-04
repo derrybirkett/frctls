@@ -19,10 +19,16 @@ We've created a GitHub Actions workflow to close these useless PRs.
 5. Review the output to confirm the correct PRs are targeted
 6. **Run again with dry_run=false** to actually close the PRs
 
-### Option 2: Manual Script (If you have gh CLI authenticated)
+### Option 2: Manual Scripts (If you have GITHUB_TOKEN)
 
-If you have the GitHub CLI (gh) installed and authenticated, you can run:
+If you have a GitHub token with appropriate permissions, you can run:
 
+**Python script (recommended for manual execution):**
+```bash
+GITHUB_TOKEN=your_token_here python3 .github/scripts/close-useless-prs.py
+```
+
+**Bash script (requires gh CLI authenticated):**
 ```bash
 .github/scripts/close-useless-prs.sh
 ```
