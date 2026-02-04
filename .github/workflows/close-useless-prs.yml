@@ -1,0 +1,85 @@
+name: Close Useless PRs
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run mode (just list PRs without closing)'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  pull-requests: write  # Required: Close PRs
+  issues: write         # Required: Comment on PRs
+
+jobs:
+  close-prs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Close automated roadmap PRs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          echo "🧹 Starting cleanup of useless automated roadmap PRs..."
+          echo "Dry run mode: $DRY_RUN"
+          echo ""
+          
+          # PRs 97-124 are the automated roadmap PRs that need to be closed
+          for pr_number in {97..124}; do
+            echo "Checking PR #$pr_number..."
+            
+            # Get PR details using GitHub API
+            pr_json=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/$pr_number")
+            
+            pr_state=$(echo "$pr_json" | jq -r '.state // "not_found"')
+            pr_title=$(echo "$pr_json" | jq -r '.title // ""')
+            
+            if [ "$pr_state" = "open" ]; then
+              # Only close PRs with the automated roadmap title
+              if [[ "$pr_title" == *"[Auto] Implement roadmap task"* ]]; then
+                echo "  Found open automated PR #$pr_number: $pr_title"
+                
+                if [ "$DRY_RUN" = "true" ]; then
+                  echo "  [DRY RUN] Would close PR #$pr_number"
+                else
+                  echo "  Closing PR #$pr_number..."
+                  
+                  # Add a comment explaining why it's being closed
+                  curl -s -X POST \
+                    -H "Authorization: token $GITHUB_TOKEN" \
+                    -H "Content-Type: application/json" \
+                    -d '{"body":"Closing this automated PR as it was created by a scheduled workflow that has been disabled. These PRs were not properly reviewed or completed."}' \
+                    "https://api.github.com/repos/${{ github.repository }}/issues/$pr_number/comments"
+                  
+                  # Close the PR
+                  curl -s -X PATCH \
+                    -H "Authorization: token $GITHUB_TOKEN" \
+                    -H "Content-Type: application/json" \
+                    -d '{"state":"closed"}' \
+                    "https://api.github.com/repos/${{ github.repository }}/pulls/$pr_number"
+                  
+                  echo "  ✅ Closed PR #$pr_number"
+                fi
+              else
+                echo "  Skipping PR #$pr_number (not an automated roadmap PR): $pr_title"
+              fi
+            elif [ "$pr_state" = "closed" ]; then
+              echo "  Skipping PR #$pr_number (already closed)"
+            else
+              echo "  Skipping PR #$pr_number (not found or merged)"
+            fi
+            
+            echo ""
+          done
+          
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "✅ Dry run complete! Re-run with dry_run=false to actually close the PRs."
+          else
+            echo "✅ Cleanup complete!"
+          fi
