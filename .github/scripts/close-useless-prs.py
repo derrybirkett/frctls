@@ -68,7 +68,7 @@ def close_useless_prs():
                     
                     try:
                         with urlopen(req) as response:
-                            pass  # Comment added successfully
+                            pass  # Comment added (no HTTPError raised)
                     except HTTPError as e:
                         print(f"  ⚠️  Warning: Failed to add comment: {e}")
                     
@@ -111,7 +111,7 @@ def close_useless_prs():
         
         print()
         
-        # Small delay to avoid rate limiting
+        # Small delay to avoid rate limiting (0.5s = ~14s total for 28 PRs)
         time.sleep(0.5)
     
     print("✅ Cleanup complete!")
