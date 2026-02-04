@@ -12,8 +12,6 @@ echo "🧹 Closing useless automated roadmap PRs..."
 echo ""
 
 # PRs 97-124 are the automated roadmap PRs that need to be closed
-# Excluding PR 126 which is the current PR for this cleanup task
-
 for pr_number in {97..124}; do
     echo "Checking PR #$pr_number..."
     

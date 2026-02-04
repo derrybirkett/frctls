@@ -36,7 +36,7 @@ def close_useless_prs():
     closed_count = 0
     skipped_count = 0
     
-    # PRs 97-124 are the automated roadmap PRs that need to be closed
+    # PRs 97-124 (28 PRs total) are the automated roadmap PRs that need to be closed
     for pr_number in range(97, 125):
         print(f"Checking PR #{pr_number}...")
         
