@@ -1,9 +1,6 @@
 name: Content Automation
 
 on:
-  schedule:
-    # Run every Tuesday and Friday at 9 AM UTC (for regular posting schedule)
-    - cron: '0 9 * * 2,5'
   workflow_dispatch:
     inputs:
       action:
