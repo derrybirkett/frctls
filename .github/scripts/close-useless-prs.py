@@ -25,7 +25,7 @@ def close_useless_prs():
     repo = "derrybirkett/frctls"
     base_url = f"https://api.github.com/repos/{repo}"
     headers = {
-        "Authorization": f"token {github_token}",
+        "Authorization": f"Bearer {github_token}",
         "Accept": "application/vnd.github.v3+json",
         "Content-Type": "application/json"
     }
