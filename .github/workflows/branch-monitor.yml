@@ -1,0 +1,37 @@
+name: Branch Monitor
+
+on:
+  schedule:
+    # Run weekly on Monday at 9 AM UTC to check for stale branches
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  monitor-branches:
+    name: Monitor Stale Branches
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Branch Monitor
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node .github/scripts/branch-monitor.js
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          gh issue create --title "Workflow Failed: Branch Monitor" --label "bug,automation" --body "Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\nStatus: Failed\nAction Required: Check branch monitoring agent logs"
