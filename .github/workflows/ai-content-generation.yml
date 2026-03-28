@@ -82,16 +82,18 @@ jobs:
           gh issue create \
             --title "🚨 Workflow Failed: AI Content Generation" \
             --label "bug,automation" \
-            --body "**Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            --body-file - <<EOF
+          **Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-**Status**: Failed ❌
+          **Status**: Failed ❌
 
-**Timestamp**: ${{ github.event.head_commit.timestamp || github.event.repository.updated_at }}
+          **Timestamp**: ${{ github.event.head_commit.timestamp || github.event.repository.updated_at }}
 
-**Action Required**: Check the workflow run logs to debug and fix the issue.
+          **Action Required**: Check the workflow run logs to debug and fix the issue.
 
----
-*Automated failure notification*"
+          ---
+          *Automated failure notification*
+          EOF
 
       - name: Summary
         if: steps.generate.outputs.content_created == 'true'

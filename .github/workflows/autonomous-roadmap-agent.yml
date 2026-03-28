@@ -68,18 +68,20 @@ jobs:
           gh issue create \
             --title "🚨 Workflow Failed: Autonomous Roadmap Agent" \
             --label "bug,automation" \
-            --body "**Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            --body-file - <<EOF
+          **Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-**Status**: Failed ❌
+          **Status**: Failed ❌
 
-**Parameters**:
-- Issue Number: ${{ inputs.issue_number || 'Not specified' }}
-- Priority: ${{ inputs.priority || 'HP (default)' }}
+          **Parameters**:
+          - Issue Number: ${{ inputs.issue_number || 'Not specified' }}
+          - Priority: ${{ inputs.priority || 'HP (default)' }}
 
-**Action Required**: Check the workflow run logs to debug and fix the issue.
+          **Action Required**: Check the workflow run logs to debug and fix the issue.
 
----
-*Automated failure notification*"
+          ---
+          *Automated failure notification*
+          EOF
 
       - name: Create Pull Request
         if: success()
