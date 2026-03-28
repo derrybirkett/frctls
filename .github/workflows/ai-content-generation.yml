@@ -21,6 +21,8 @@ env:
 
 jobs:
   generate-content:
+    # Paused on 2026-03-28 pending workflow hardening and review-flow fixes.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     permissions:
       contents: write  # Required: Commit generated content

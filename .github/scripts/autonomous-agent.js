@@ -16,7 +16,7 @@ const openai = new OpenAI({
 
 // Configuration
 const CONFIG = {
-  model: 'gpt-4-turbo-preview',
+  model: process.env.OPENAI_AGENT_MODEL || process.env.OPENAI_MODEL || 'gpt-4.1',
   maxTokens: 4000,
   temperature: 0.3,
   priorityOrder: ['HP', 'MP', 'LP'],

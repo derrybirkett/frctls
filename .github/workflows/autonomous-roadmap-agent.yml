@@ -23,6 +23,8 @@ permissions:
 
 jobs:
   implement-roadmap-task:
+    # Paused on 2026-03-28 pending automation review and safety fixes.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
