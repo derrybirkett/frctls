@@ -12,6 +12,7 @@ permissions:
 jobs:
   cto-review:
     name: CTO Technical Review
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -64,6 +65,7 @@ jobs:
 
   ciso-review:
     name: CISO Security Review
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -116,12 +118,9 @@ jobs:
 
   auto-merge:
     name: Auto-Merge PR
+    if: ${{ false }}
     runs-on: ubuntu-latest
     needs: [cto-review, ciso-review]
-    if: |
-      needs.cto-review.outputs.should_block != 'true' &&
-      needs.ciso-review.outputs.should_block != 'true' &&
-      github.event.pull_request.draft == false
     steps:
       - name: Wait for other checks
         run: sleep 30

@@ -22,6 +22,8 @@ permissions:
 
 jobs:
   content-automation:
+    # Paused on 2026-03-28 pending scheduling and publish-flow fixes.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
