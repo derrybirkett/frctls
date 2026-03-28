@@ -32,7 +32,7 @@ function getAllBranches() {
   try {
     const branches = JSON.parse(
       exec(
-        'gh api repos/${{ github.repository }}/branches --paginate --jq ".[] | {name: .name, protected: .protected, commit: .commit.sha, lastCommit: .commit.commit.author.date}"',
+        `gh api repos/${process.env.GITHUB_REPOSITORY}/branches --paginate --jq ".[] | {name: .name, protected: .protected, commit: .commit.sha, lastCommit: .commit.commit.author.date}"`,
         { silent: true }
       )
     );

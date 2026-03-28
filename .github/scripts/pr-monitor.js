@@ -122,7 +122,7 @@ ${issues.map((issue, i) => `${i + 1}. ${issue}`).join('\n')}
 - Update PR to trigger re-checks if needed
 - Comment when ready for review
 
-**PR Link:** https://github.com/${{ github.repository }}/pull/${pr.number}
+**PR Link:** https://github.com/${process.env.GITHUB_REPOSITORY}/pull/${pr.number}
 
 ---
 *Automated PR monitoring alert*`;
