@@ -28,6 +28,7 @@ Log new agent activity for each commit: who did what and why.
 | 2026-01-18 | CTO | multiple | Repository cleanup: Fixed duplicate PRs, security credentials, and lockfile conflicts | Merged PR #50 (duplicate prevention), PR #27 (DB creds), PR #29 (Snyk/Astro upgrade); Resolved blog post duplication; Enabled pre-commit quality gates | PR #50, PR #27, PR #29, apps/blog/pnpm-lock.yaml |
 | 2026-03-28 | Codex | local | Paused content and agent automation workflows pending review fixes | Prevent unattended publishing, AI direct pushes, and automated PR actions until the workflow defects found in review are addressed | .github/workflows/ai-content-generation.yml, .github/workflows/autonomous-roadmap-agent.yml, .github/workflows/content-automation.yml, .github/workflows/pr-review-agents.yml |
 | 2026-03-28 | Codex | local | Updated OpenAI automation scripts to use supported configurable models | Fix runtime failures caused by retired `gpt-4-turbo-preview`; allow future model swaps via environment variables without code changes | .github/scripts/autonomous-agent.js, .github/scripts/cto-review-agent.js, .github/scripts/ciso-review-agent.js, .github/scripts/generate-content.js |
+| 2026-03-28 | Codex | local | Fixed content-ideas automation output persistence and date rendering | Preserve manual content-idea output in the workflow summary and render dynamic dates instead of writing literal shell expressions | .github/workflows/content-automation.yml |
 | YYYY-MM-DD | <agent> | <hash or #PR> | <summary> | <decision/assumption> | <issue/docs> |
 
 Guidance:

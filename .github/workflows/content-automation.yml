@@ -143,9 +143,15 @@ jobs:
         run: |
           echo "Generating content ideas based on our content pillars..."
 
-          # Create content ideas file
-          cat > content-ideas-$(date +%Y-%m-%d).md << 'EOF'
-          # Content Ideas - $(date +%Y-%m-%d)
+          DATE_STAMP=$(date +%Y-%m-%d)
+          CURRENT_YEAR=$(date +%Y)
+          CURRENT_MONTH=$(date +%-m)
+          CURRENT_QUARTER=$((((CURRENT_MONTH - 1) / 3) + 1))
+          OUTPUT_FILE="content-ideas-${DATE_STAMP}.md"
+
+          # Create content ideas file and publish it to the workflow summary
+          cat > "${OUTPUT_FILE}" <<EOF
+          # Content Ideas - ${DATE_STAMP}
           
           ## Theory Pillar
           - "The Network Effect of Cultural Tokens"
@@ -168,8 +174,16 @@ jobs:
           - "Creating Feedback Loops That Drive Sustainable Change"
           
           ## Seasonal/Trending Topics
-          - "New Year, New Culture: Planning Transformation for $(date +%Y)"
-          - "Q$((($(date +%-m)-1)/3+1)) Planning: Fractal Changes for This Quarter"
+          - "New Year, New Culture: Planning Transformation for ${CURRENT_YEAR}"
+          - "Q${CURRENT_QUARTER} Planning: Fractal Changes for This Quarter"
           EOF
-          
-          echo "Content ideas generated and saved to content-ideas-$(date +%Y-%m-%d).md"
+
+          {
+            echo "## Generated Content Ideas"
+            echo
+            echo "File: \`${OUTPUT_FILE}\`"
+            echo
+            cat "${OUTPUT_FILE}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "Content ideas generated and added to the workflow summary from ${OUTPUT_FILE}"
