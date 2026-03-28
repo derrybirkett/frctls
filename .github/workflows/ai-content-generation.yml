@@ -1,6 +1,10 @@
 name: AI Content Generation
 
 on:
+  schedule:
+    # Generate content every Tuesday and Friday at 8 AM UTC
+    - cron: '0 8 * * 2'  # Tuesday
+    - cron: '0 8 * * 5'  # Friday
   workflow_dispatch:
     inputs:
       topic_override:

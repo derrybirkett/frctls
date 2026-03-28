@@ -1,6 +1,9 @@
 name: Content Automation
 
 on:
+  schedule:
+    # Check and publish scheduled content daily at 7 AM UTC
+    - cron: '0 7 * * *'
   workflow_dispatch:
     inputs:
       action:
