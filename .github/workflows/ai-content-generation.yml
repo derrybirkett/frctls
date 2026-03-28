@@ -33,12 +33,17 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.1
+
       - name: Install dependencies
         run: |
           cd .github/scripts
-          npm install --no-cache
+          pnpm install
           echo "Dependencies installed:"
-          npm list
+          pnpm list
 
       - name: Generate content
         id: generate
