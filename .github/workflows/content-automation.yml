@@ -122,19 +122,7 @@ jobs:
       - name: Notify on failure
         if: failure()
         run: |
-          gh issue create \
-            --title "🚨 Workflow Failed: Content Automation" \
-            --label "bug,automation" \
-            --body "**Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-**Status**: Failed ❌
-
-**Action**: ${{ github.event.inputs.action || 'Not specified' }}
-
-**Action Required**: Check the workflow run logs to debug and fix the issue.
-
----
-*Automated failure notification*"
+          gh issue create --title "Workflow Failed: Content Automation" --label "bug,automation" --body "Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\nStatus: Failed\nAction: ${{ github.event.inputs.action || 'Not specified' }}\nAction Required: Check workflow logs"
 
       - name: Generate content ideas (manual trigger)
         if: github.event.inputs.action == 'generate-content-ideas'
