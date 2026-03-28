@@ -50,16 +50,18 @@ jobs:
           gh issue create \
             --title "🚨 Workflow Failed: CTO Review Agent" \
             --label "bug,automation" \
-            --body "**Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            --body-file - <<EOF
+          **Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-**Status**: Failed ❌
+          **Status**: Failed ❌
 
-**PR**: #${{ github.event.pull_request.number }}
+          **PR**: #${{ github.event.pull_request.number }}
 
-**Action Required**: Check the CTO review agent logs and fix the issue.
+          **Action Required**: Check the CTO review agent logs and fix the issue.
 
----
-*Automated failure notification*"
+          ---
+          *Automated failure notification*
+          EOF
     outputs:
       should_block: ${{ steps.cto-review.outputs.should_block || 'false' }}
 
@@ -103,16 +105,18 @@ jobs:
           gh issue create \
             --title "🚨 Workflow Failed: CISO Security Review Agent" \
             --label "bug,automation,security" \
-            --body "**Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            --body-file - <<EOF
+          **Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-**Status**: Failed ❌
+          **Status**: Failed ❌
 
-**PR**: #${{ github.event.pull_request.number }}
+          **PR**: #${{ github.event.pull_request.number }}
 
-**Action Required**: Check the CISO security review agent logs and fix the issue immediately.
+          **Action Required**: Check the CISO security review agent logs and fix the issue immediately.
 
----
-*Automated failure notification*"
+          ---
+          *Automated failure notification*
+          EOF
     outputs:
       should_block: ${{ steps.ciso-review.outputs.should_block || 'false' }}
 

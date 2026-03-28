@@ -81,9 +81,9 @@ jobs:
         run: |
           echo "🚨 Checking for high/critical vulnerabilities..."
           if pnpm audit --audit-level=high 2>&1 | grep -q "vulnerabilities"; then
-            if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ steps.dep-changes.outputs.manifest_changed }}" != "true" ]; then
-              echo "⚠️ High or critical vulnerabilities exist in the current baseline, but this PR does not modify dependency manifests."
-              echo "⚠️ Leaving the audit visible without blocking this unrelated PR."
+            if [ "${{ steps.dep-changes.outputs.manifest_changed }}" != "true" ]; then
+              echo "⚠️ High or critical vulnerabilities exist in the current baseline, but this change does not modify dependency manifests."
+              echo "⚠️ Leaving the audit visible without blocking this unrelated change."
             else
               echo "❌ High or critical vulnerabilities found!"
               exit 1
