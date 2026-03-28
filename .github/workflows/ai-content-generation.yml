@@ -33,12 +33,17 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.1
+
       - name: Install dependencies
         run: |
           cd .github/scripts
-          npm install --no-cache
+          pnpm install
           echo "Dependencies installed:"
-          npm list
+          pnpm list
 
       - name: Generate content
         id: generate
@@ -64,6 +69,23 @@ jobs:
             git push
             echo "✅ Content committed and pushed successfully"
           fi
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          gh issue create \
+            --title "🚨 Workflow Failed: AI Content Generation" \
+            --label "bug,automation" \
+            --body "**Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+**Status**: Failed ❌
+
+**Timestamp**: ${{ github.event.head_commit.timestamp || github.event.repository.updated_at }}
+
+**Action Required**: Check the workflow run logs to debug and fix the issue.
+
+---
+*Automated failure notification*"
 
       - name: Summary
         if: steps.generate.outputs.content_created == 'true'

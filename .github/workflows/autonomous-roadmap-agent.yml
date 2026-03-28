@@ -48,6 +48,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Run autonomous agent
+        id: agent
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -55,6 +56,25 @@ jobs:
           PRIORITY_FILTER: ${{ inputs.priority }}
         run: |
           node .github/scripts/autonomous-agent.js
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          gh issue create \
+            --title "🚨 Workflow Failed: Autonomous Roadmap Agent" \
+            --label "bug,automation" \
+            --body "**Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+**Status**: Failed ❌
+
+**Parameters**:
+- Issue Number: ${{ inputs.issue_number || 'Not specified' }}
+- Priority: ${{ inputs.priority || 'HP (default)' }}
+
+**Action Required**: Check the workflow run logs to debug and fix the issue.
+
+---
+*Automated failure notification*"
 
       - name: Create Pull Request
         if: success()
