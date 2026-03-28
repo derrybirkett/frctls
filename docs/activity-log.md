@@ -31,6 +31,7 @@ Log new agent activity for each commit: who did what and why.
 | 2026-03-28 | Codex | local | Fixed content-ideas automation output persistence and date rendering | Preserve manual content-idea output in the workflow summary and render dynamic dates instead of writing literal shell expressions | .github/workflows/content-automation.yml |
 | 2026-03-28 | Codex | local | Fixed security-scan self-match and stopped unrelated PRs from failing on dependency baseline | Exclude `security-scan.yml` from its own grep rule and only hard-fail dependency audit on PRs that actually modify manifests or lockfiles | .github/workflows/security-scan.yml |
 | 2026-03-28 | Codex | local | Fixed invalid YAML in paused workflow notification steps | Replace fragile quoted multiline `gh issue create` bodies with heredoc input so GitHub can parse the workflow files | .github/workflows/ai-content-generation.yml, .github/workflows/autonomous-roadmap-agent.yml, .github/workflows/content-automation.yml, .github/workflows/pr-review-agents.yml |
+| 2026-03-28 | Codex | local | Unblocked main workflow runs by fixing deploy action pins and dependency audit gating | Restore valid GitHub Pages action versions and stop unrelated main merges from failing on pre-existing dependency vulnerabilities | .github/workflows/deploy-blog.yml, .github/workflows/security-scan.yml |
 | YYYY-MM-DD | <agent> | <hash or #PR> | <summary> | <decision/assumption> | <issue/docs> |
 
 Guidance:

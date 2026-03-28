@@ -52,10 +52,10 @@ jobs:
           pnpm build
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4.1.0
+        uses: actions/configure-pages@v4
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3.1.1
+        uses: actions/upload-pages-artifact@v3
         with:
           path: apps/blog/dist
 
