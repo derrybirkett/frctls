@@ -116,11 +116,28 @@ jobs:
           auto-merge-method: squash
           labels: automated,content-publish
 
+      - name: Notify on failure
+        if: failure()
+        run: |
+          gh issue create \
+            --title "🚨 Workflow Failed: Content Automation" \
+            --label "bug,automation" \
+            --body "**Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+**Status**: Failed ❌
+
+**Action**: ${{ github.event.inputs.action || 'Not specified' }}
+
+**Action Required**: Check the workflow run logs to debug and fix the issue.
+
+---
+*Automated failure notification*"
+
       - name: Generate content ideas (manual trigger)
         if: github.event.inputs.action == 'generate-content-ideas'
         run: |
           echo "Generating content ideas based on our content pillars..."
-          
+
           # Create content ideas file
           cat > content-ideas-$(date +%Y-%m-%d).md << 'EOF'
           # Content Ideas - $(date +%Y-%m-%d)

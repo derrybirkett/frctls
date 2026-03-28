@@ -70,6 +70,23 @@ jobs:
             echo "✅ Content committed and pushed successfully"
           fi
 
+      - name: Notify on failure
+        if: failure()
+        run: |
+          gh issue create \
+            --title "🚨 Workflow Failed: AI Content Generation" \
+            --label "bug,automation" \
+            --body "**Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+**Status**: Failed ❌
+
+**Timestamp**: ${{ github.event.head_commit.timestamp || github.event.repository.updated_at }}
+
+**Action Required**: Check the workflow run logs to debug and fix the issue.
+
+---
+*Automated failure notification*"
+
       - name: Summary
         if: steps.generate.outputs.content_created == 'true'
         run: |
