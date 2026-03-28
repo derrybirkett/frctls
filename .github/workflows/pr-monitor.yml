@@ -1,0 +1,35 @@
+name: PR Monitor
+
+on:
+  schedule:
+    # Run daily at 10 AM UTC to check PR health
+    - cron: '0 10 * * *'
+  workflow_dispatch:
+
+permissions:
+  pull-requests: read
+  issues: write
+
+jobs:
+  monitor-prs:
+    name: Monitor Open PRs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run PR Monitor
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node .github/scripts/pr-monitor.js
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          gh issue create --title "Workflow Failed: PR Monitor" --label "bug,automation" --body "Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\nStatus: Failed\nAction Required: Check PR monitoring agent logs"
