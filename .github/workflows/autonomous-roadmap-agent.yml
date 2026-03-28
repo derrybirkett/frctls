@@ -1,6 +1,9 @@
 name: Autonomous Roadmap Agent
 
 on:
+  schedule:
+    # Run autonomous agent daily at 9 AM UTC to implement high-priority tasks
+    - cron: '0 9 * * *'
   workflow_dispatch:
     inputs:
       issue_number:
