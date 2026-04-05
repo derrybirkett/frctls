@@ -25,7 +25,9 @@ jobs:
     if: ${{ false }}
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Required: Commit generated content
+      contents: write  # Required: Create branches and commit generated content
+      pull-requests: write  # Required: Open PR for draft review
+      issues: write  # Required: Create tracking issue with content details
       actions: read  # Required: Read workflow state
     
     steps:
@@ -62,19 +64,85 @@ jobs:
           TOPIC_OVERRIDE: ${{ github.event.inputs.topic_override }}
           TARGET_DATE: ${{ github.event.inputs.target_date }}
 
-      - name: Commit generated content
+      - name: Create GitHub Issue for draft
+        id: create-issue
         if: steps.generate.outputs.content_created == 'true'
         run: |
+          ISSUE_URL=$(gh issue create \
+            --title "📝 Draft: ${{ steps.generate.outputs.post_title }}" \
+            --label "content,draft,automation" \
+            --body "## AI-Generated Post Draft
+
+          A new blog post draft has been generated and is ready for review.
+
+          | Field | Value |
+          |-------|-------|
+          | **Topic** | ${{ steps.generate.outputs.topic }} |
+          | **Target Date** | ${{ steps.generate.outputs.target_date }} |
+          | **Word Count** | ${{ steps.generate.outputs.word_count }} |
+          | **File** | \`apps/blog/src/content/drafts/${{ steps.generate.outputs.slug }}.md\` |
+          | **Workflow Run** | [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |
+
+          ## Next Steps
+          - [ ] Review the draft in the linked PR
+          - [ ] Request edits or approve the content
+          - [ ] Merge PR to include draft in the repository
+
+          ---
+          *Automated draft notification — created by the AI Content Generation workflow.*")
+          ISSUE_NUMBER=$(echo "$ISSUE_URL" | grep -oE '[0-9]+$')
+          echo "issue_url=$ISSUE_URL" >> $GITHUB_OUTPUT
+          echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
+          echo "✅ Issue created: $ISSUE_URL"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create branch and commit draft
+        id: commit-draft
+        if: steps.generate.outputs.content_created == 'true'
+        run: |
+          BRANCH="automated/content-draft-${{ github.run_number }}"
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action AI"
+          git checkout -b "$BRANCH"
           git add apps/blog/src/content/drafts/
           if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "feat: add AI-generated blog post - ${{ steps.generate.outputs.post_title }}"
-            git push
-            echo "✅ Content committed and pushed successfully"
+            echo "No changes to commit — draft file may already exist"
+            exit 0
           fi
+          git commit -m "feat: add AI-generated blog post draft - ${{ steps.generate.outputs.post_title }}"
+          git push origin "$BRANCH"
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          echo "✅ Draft committed to branch: $BRANCH"
+
+      - name: Create Pull Request for draft
+        if: steps.generate.outputs.content_created == 'true' && steps.commit-draft.outputs.branch != ''
+        run: |
+          gh pr create \
+            --head "${{ steps.commit-draft.outputs.branch }}" \
+            --base main \
+            --title "📝 Draft: ${{ steps.generate.outputs.post_title }}" \
+            --label "content,draft,automation" \
+            --body "## AI-Generated Post Draft
+
+          Closes #${{ steps.create-issue.outputs.issue_number }}
+
+          | Field | Value |
+          |-------|-------|
+          | **Topic** | ${{ steps.generate.outputs.topic }} |
+          | **Target Date** | ${{ steps.generate.outputs.target_date }} |
+          | **Word Count** | ${{ steps.generate.outputs.word_count }} |
+          | **File** | \`apps/blog/src/content/drafts/${{ steps.generate.outputs.slug }}.md\` |
+
+          ## Review Checklist
+          - [ ] Content is accurate and on-brand
+          - [ ] Frontmatter (title, description, pubDate, tags) is correct
+          - [ ] No sensitive or inappropriate content
+
+          ---
+          *This PR was created automatically by the AI Content Generation workflow.*"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Notify on failure
         if: failure()
